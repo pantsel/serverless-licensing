@@ -8,9 +8,13 @@ module.exports.create = (event, context, callback) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
-  const data = event.body;
-  if (typeof data.serviceId !== 'string') {
+  let data = {}
 
+  try{
+    data = JSON.parse(event.body);
+  }catch (e) {}
+
+  if (!data.serviceId || data.serviceId === 'undefined') {
     console.error('Validation Failed');
     return callback(null, response.badRequest("Missing required parameters"));
   }
@@ -18,12 +22,7 @@ module.exports.create = (event, context, callback) => {
   let key = LicenseKey().generate(data.serviceId);
 
   return connectToDatabase()
-    .then(() =>
-      LicenseKeyModel
-        .create(_.merge(data, {
-          value: key
-        }))
-    )
+    .then(() => LicenseKeyModel.create(_.merge(data, { value: key })))
     .then(doc => callback(null, response.ok(doc)))
     .catch(err => callback(null, response.error(err)));
 };
