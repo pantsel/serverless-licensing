@@ -64,8 +64,8 @@ functions:
       - http:
           path: key
           method: post
-  list:
-    handler: handlers/keys.list
+  query:
+    handler: handlers/keys.query
     events:
       - http:
           path: keys

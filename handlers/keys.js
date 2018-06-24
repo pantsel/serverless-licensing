@@ -4,6 +4,13 @@ const LicenseKeyModel = require('../models/license-key');
 const response = require('../helpers/response');
 const _ = require('lodash');
 
+/**
+ * Create a new License key
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
 module.exports.create = (event, context, callback) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
@@ -27,7 +34,14 @@ module.exports.create = (event, context, callback) => {
     .catch(err => callback(null, response.negotiate(err)));
 };
 
-module.exports.list = (event, context, callback) => {
+/**
+ * Query License keys
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {Promise<T>}
+ */
+module.exports.query = (event, context, callback) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
