@@ -24,5 +24,5 @@ module.exports.create = (event, context, callback) => {
   return connectToDatabase()
     .then(() => LicenseKeyModel.create(_.merge(data, { value: key })))
     .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.error(err)));
+    .catch(err => callback(null, response.negotiate(err)));
 };

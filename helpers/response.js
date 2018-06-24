@@ -1,5 +1,5 @@
 module.exports = {
-  error: (err) => {
+  negotiate: (err) => {
     return {
       statusCode: err.statusCode || 501,
       headers: {'Content-Type': 'application/json'},
