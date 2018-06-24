@@ -59,17 +59,17 @@ provider:
 
 functions:
   create:
-    handler: handlers/key.create
+    handler: handlers/keys.create
     events:
       - http:
           path: key
           method: post
-#  list:
-#    handler: functions/list-keys.list
-#    events:
-#      - http:
-#          path: keys
-#          method: get
+  list:
+    handler: handlers/keys.list
+    events:
+      - http:
+          path: keys
+          method: get
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

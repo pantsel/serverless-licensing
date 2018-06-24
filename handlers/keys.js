@@ -26,3 +26,19 @@ module.exports.create = (event, context, callback) => {
     .then(doc => callback(null, response.ok(doc)))
     .catch(err => callback(null, response.negotiate(err)));
 };
+
+module.exports.list = (event, context, callback) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  let options = {
+    page : _.get(event, 'queryStringParameters.page') ? parseInt(event.queryStringParameters.page) : 1,
+    limit: _.get(event, 'queryStringParameters.limit') ? parseInt(event.queryStringParameters.limit) : 25,
+    sort : _.get(event, 'queryStringParameters.sort') ? event.queryStringParameters.sort : { createdAt: -1 }
+  }
+
+  return connectToDatabase()
+    .then(() => LicenseKeyModel.paginate({},options))
+    .then(docs => callback(null, response.ok(docs)))
+    .catch(err => callback(null, response.negotiate(err)));
+};

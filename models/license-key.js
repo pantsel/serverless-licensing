@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
 // const validator = require('validator');
 
 const schema = new mongoose.Schema({
@@ -27,6 +28,7 @@ const schema = new mongoose.Schema({
     type: Number
   }
 });
+schema.plugin(mongoosePaginate);
 
 schema.pre('save', function (next) {
   now = new Date().getTime();
