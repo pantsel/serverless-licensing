@@ -1,6 +1,7 @@
+require('dotenv').config()
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
-const mongoString = 'mongodb://localhost:27017/licensing?poolSize=4'; // MongoDB Url
+const mongoString = process.env.MONGO_URL; // MongoDB Url
 mongoose.Promise = Promise;
 let isConnected;
 
