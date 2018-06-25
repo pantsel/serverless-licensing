@@ -76,6 +76,12 @@ functions:
         - http:
             path: keys/{id}
             method: get
+  activateKey:
+      handler: handlers/keys.activate
+      events:
+        - http:
+            path: keys/{value}/activate
+            method: post
   createPlan:
       handler: handlers/plans.create
       events:

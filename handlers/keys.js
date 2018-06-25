@@ -4,6 +4,7 @@ const LicenseKeyModel = require('../models/license-key');
 const LicenseKeyPlanModel = require('../models/license-key-plan');
 const response = require('../helpers/response');
 const _ = require('lodash');
+const moment = require('moment');
 
 
 /**
@@ -21,8 +22,7 @@ module.exports.create = (event, context, callback) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {
-  }
+  } catch (e) {}
 
   if (!data.serviceId || data.serviceId === 'undefined' || !data.plan) {
     console.error('Validation Failed');
@@ -78,6 +78,56 @@ module.exports.findOne = (event, context, callback) => {
 
   return connectToDatabase()
     .then(() => LicenseKeyModel.findById(identifier))
+    .then(doc => callback(null, response.ok(doc)))
+    .catch(err => callback(null, response.negotiate(err)));
+};
+
+
+/**
+ * Activate a specific key
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {Promise<T>}
+ */
+module.exports.activate = (event, context, callback) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  let data = {}
+
+  try {
+    data = JSON.parse(event.body);
+  } catch (e) {}
+
+  if(!data.consumerId) return callback(null, response.badRequest("Missing required parameters"))
+  const value = _.get(event, 'pathParameters.value');
+
+
+
+  return connectToDatabase()
+    .then(() => LicenseKeyModel.findOne({value: value}).populate('plan'))
+    .then((key) => {
+
+      // Perform some checks
+      if(!key) return callback(null, response.notFound("Key not found"));
+      if(!key.plan) return callback(null, response.badRequest("There is no plan assigned to the key"));
+      if(key.activatedAt) return callback(null, response.badRequest("Key already activated"));
+
+      let now = new Date().getTime();
+
+      key.consumerId = data.consumerId;
+      if(data.identifier) key.identifier = data.identifier;
+      key.activatedAt = now;
+
+      // Create expiresAt
+      let durationArray = key.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
+      let expiresAt = moment(now).add(durationArray[0],durationArray[1]);
+      key.expiresAt = expiresAt;
+
+      return key.save();
+
+    })
     .then(doc => callback(null, response.ok(doc)))
     .catch(err => callback(null, response.negotiate(err)));
 };
