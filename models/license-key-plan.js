@@ -36,7 +36,6 @@ schema.pre('save', function (next) {
   next();
 });
 
-
 var LicenseKeyPlan = mongoose.model('LicenseKeyPlan', schema);
 
 module.exports = LicenseKeyPlan;

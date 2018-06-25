@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
-// const validator = require('validator');
 
 const schema = new mongoose.Schema({
   value: {
@@ -60,7 +59,6 @@ schema.set('toJSON', {
   virtuals: true
 });
 
-
 schema.pre('save', function (next) {
   now = new Date().getTime();
   this.updatedAt = now;
@@ -69,7 +67,6 @@ schema.pre('save', function (next) {
   }
   next();
 });
-
 
 var LicenseKey = mongoose.model('LicenseKey', schema);
 
