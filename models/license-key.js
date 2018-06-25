@@ -15,7 +15,7 @@ const schema = new mongoose.Schema({
   consumerId: {
     type: String
   },
-  plan : {
+  plan: {
     type: mongoose.Schema.Types.ObjectId, ref: 'LicenseKeyPlan'
   },
   activatedAt: {
@@ -32,6 +32,34 @@ const schema = new mongoose.Schema({
   }
 });
 schema.plugin(mongoosePaginate);
+
+/**
+ * Virtuals
+ * @type {VirtualType}
+ */
+var virtualStatus = schema.virtual('status');
+virtualStatus.get(function () {
+
+  let now = new Date().getTime();
+
+  if (!this.activatedAt) {
+    return "pending"
+  }
+
+
+  if (this.expiresAt >= now) {
+    return "active"
+  }
+
+  if (this.expiresAt < now) {
+    return "expired"
+  }
+});
+
+schema.set('toJSON', {
+  virtuals: true
+});
+
 
 schema.pre('save', function (next) {
   now = new Date().getTime();
