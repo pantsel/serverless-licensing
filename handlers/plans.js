@@ -1,19 +1,18 @@
-const LicenseKey = require('../lib/license-key');
 const connectToDatabase = require('../helpers/db');
-const LicenseKeyModel = require('../models/license-key');
 const LicenseKeyPlanModel = require('../models/license-key-plan');
 const response = require('../helpers/response');
 const _ = require('lodash');
+const slug = require('slug');
 
 
 /**
- * Create a new License key
+ * Create a plan
  * @param event
  * @param context
  * @param callback
  * @returns {*}
  */
-module.exports.create = (event, context, callback) => {
+module.exports.bulkInsert = (event, context, callback) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -21,27 +20,54 @@ module.exports.create = (event, context, callback) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {
-  }
+  } catch (e) {}
 
-  if (!data.serviceId || data.serviceId === 'undefined' || !data.plan) {
-    console.error('Validation Failed');
-    return callback(null, response.badRequest("Missing required parameters"));
-  }
+  // Create alias
+  data.alias = slug(data.name).toLowerCase();
 
   return connectToDatabase()
-    .then(() => LicenseKeyPlanModel.findOne({alias: data.plan}))
-    .then((plan) => {
-      if(!plan) return callback(null, response.notFound("plan not found"));
-      let key = LicenseKey().generate(data.serviceId);
-      return LicenseKeyModel.create(_.merge(data, {value: key}, {plan: plan._id}))
-    })
+    .then(() => LicenseKeyPlanModel.create(data))
     .then(doc => callback(null, response.ok(doc)))
     .catch(err => callback(null, response.negotiate(err)));
 };
 
 /**
- * Query License keys
+ * Bulk insert plans
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
+module.exports.bulkInsert = (event, context, callback) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  let data = []
+
+  try {
+    data = JSON.parse(event.body);
+  } catch (e) {}
+
+  if(!data instanceof Array || !data.length) {
+    return callback(null, response.badRequest("Invalid body"));
+  }
+
+  // Create aliases and timestamps
+  const now = new Date().getTime();
+  data.forEach(item => {
+    item.alias = slug(item.name).toLowerCase();
+    item.createdAt = now;
+    item.updatedAt = now;
+  })
+
+  return connectToDatabase()
+    .then(() => LicenseKeyPlanModel.insertMany(data))
+    .then(docs => callback(null, response.ok(docs)))
+    .catch(err => callback(null, response.negotiate(err)));
+};
+
+/**
+ * Query plans
  * @param event
  * @param context
  * @param callback
@@ -58,13 +84,13 @@ module.exports.query = (event, context, callback) => {
   }
 
   return connectToDatabase()
-    .then(() => LicenseKeyModel.paginate({}, options))
+    .then(() => LicenseKeyPlanModel.paginate({}, options))
     .then(docs => callback(null, response.ok(docs)))
     .catch(err => callback(null, response.negotiate(err)));
 };
 
 /**
- * Find a specific key using its id or value
+ * Find a specific plan
  * @param event
  * @param context
  * @param callback
@@ -77,7 +103,7 @@ module.exports.findOne = (event, context, callback) => {
   const identifier = _.get(event, 'pathParameters.id');
 
   return connectToDatabase()
-    .then(() => LicenseKeyModel.findById(identifier))
+    .then(() => LicenseKeyPlanModel.findById(identifier))
     .then(doc => callback(null, response.ok(doc)))
     .catch(err => callback(null, response.negotiate(err)));
 };

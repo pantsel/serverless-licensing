@@ -58,18 +58,48 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  create:
+  createKey:
     handler: handlers/keys.create
     events:
       - http:
-          path: key
+          path: keys
           method: post
-  query:
+  queryKeys:
     handler: handlers/keys.query
     events:
       - http:
           path: keys
           method: get
+  findOneKey:
+      handler: handlers/keys.findOne
+      events:
+        - http:
+            path: keys/{id}
+            method: get
+  createPlan:
+      handler: handlers/plans.create
+      events:
+        - http:
+            path: plans
+            method: post
+  bulkInsertPlans:
+      handler: handlers/plans.bulkInsert
+      events:
+        - http:
+            path: plans
+            method: put
+  queryPlans:
+      handler: handlers/plans.query
+      events:
+        - http:
+            path: plans
+            method: get
+  findOnePlan:
+      handler: handlers/plans.findOne
+      events:
+        - http:
+            path: plans/{id}
+            method: get
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

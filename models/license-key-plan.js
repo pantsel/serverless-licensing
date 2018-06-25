@@ -1,28 +1,22 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
-// const validator = require('validator');
 
 const schema = new mongoose.Schema({
-  value: {
+  name: {
     type: String,
     required: true,
     unique: true
   },
-  serviceId: {
+  alias : {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
-  consumerId: {
+  description: {
     type: String
   },
-  plan : {
-    type: mongoose.Schema.Types.ObjectId, ref: 'LicenseKeyPlan'
-  },
-  activatedAt: {
-    type: Number
-  },
-  expiresAt: {
-    type: Number
+  duration: {
+    type: String
   },
   createdAt: {
     type: Number
@@ -43,6 +37,6 @@ schema.pre('save', function (next) {
 });
 
 
-var LicenseKey = mongoose.model('LicenseKey', schema);
+var LicenseKeyPlan = mongoose.model('LicenseKeyPlan', schema);
 
-module.exports = LicenseKey;
+module.exports = LicenseKeyPlan;

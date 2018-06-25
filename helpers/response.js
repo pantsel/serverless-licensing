@@ -21,5 +21,15 @@ module.exports = {
         message: message || 'Bad request'
       },
     }
+  },
+
+  notFound: (message) => {
+    return {
+      statusCode: 404,
+      headers: {'Content-Type': 'application/json'},
+      body: {
+        message: message || 'Not found'
+      },
+    }
   }
 }
