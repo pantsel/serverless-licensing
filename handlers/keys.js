@@ -104,7 +104,6 @@ module.exports.activate = (event, context, callback) => {
   const value = _.get(event, 'pathParameters.value');
 
 
-
   return connectToDatabase()
     .then(() => LicenseKeyModel.findOne({value: value}).populate('plan'))
     .then((key) => {
@@ -112,7 +111,7 @@ module.exports.activate = (event, context, callback) => {
       // Perform some checks
       if(!key) return callback(null, response.notFound("Key not found"));
       if(!key.plan) return callback(null, response.badRequest("There is no plan assigned to the key"));
-      if(key.activatedAt) return callback(null, response.badRequest("Key already activated"));
+      if(key.activatedAt || key.consumerId) return callback(null, response.badRequest("Key already activated"));
 
       let now = new Date().getTime();
 
@@ -120,12 +119,61 @@ module.exports.activate = (event, context, callback) => {
       if(data.identifier) key.identifier = data.identifier;
       key.activatedAt = now;
 
-      // Create expiresAt
-      let durationArray = key.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
-      let expiresAt = moment(now).add(durationArray[0],durationArray[1]);
+      // Create expiresAt based on the plan
+      let planDurationParts = key.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
+      let expiresAt = moment(now).add(planDurationParts[0],planDurationParts[1]);
       key.expiresAt = expiresAt;
 
       return key.save();
+
+    })
+    .then(doc => callback(null, response.ok(doc)))
+    .catch(err => callback(null, response.negotiate(err)));
+};
+
+
+/**
+ * Validate a specific key
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {Promise<T>}
+ */
+module.exports.validate = (event, context, callback) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  let data = {}
+
+  try {
+    data = JSON.parse(event.body);
+  } catch (e) {}
+
+  if(!data.consumerId) return callback(null, response.badRequest("Missing required parameters"))
+  const value = _.get(event, 'pathParameters.value');
+
+
+  return connectToDatabase()
+    .then(() => LicenseKeyModel.findOne({value: value}))
+    .then((key) => {
+
+      if(!key) return callback(null, response.notFound("Key not found"));
+
+      if(!key.activatedAt || !key.consumerId) return callback(null, response.badRequest("Key not activated"));
+
+      if(key.consumerId !== data.consumerId) {
+        return callback(null, response.forbidden("Invalid consumer"));
+      }
+
+      if(key.identifier !== data.identifier) {
+        return callback(null, response.forbidden("Invalid identifier"));
+      }
+
+      if(key.expiresAt < new Date().getTime()) {
+        return callback(null, response.forbidden("key expired"));
+      }
+
+      return key;
 
     })
     .then(doc => callback(null, response.ok(doc)))

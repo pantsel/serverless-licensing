@@ -58,6 +58,7 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
+  ### KEYS ###
   createKey:
     handler: handlers/keys.create
     events:
@@ -82,6 +83,14 @@ functions:
         - http:
             path: keys/{value}/activate
             method: post
+  validateKey:
+      handler: handlers/keys.validate
+      events:
+        - http:
+            path: keys/{value}/validate
+            method: post
+
+  ### PLANS ###
   createPlan:
       handler: handlers/plans.create
       events:
