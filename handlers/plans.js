@@ -12,7 +12,7 @@ const slug = require('slug');
  * @param callback
  * @returns {*}
  */
-module.exports.bulkInsert = (event, context, callback) => {
+module.exports.create = (event, context, callback) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
