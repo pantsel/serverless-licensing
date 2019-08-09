@@ -63,12 +63,14 @@ functions:
           method: post
   queryKeys:
     handler: handlers/keys.query
+    private: true
     events:
       - http:
           path: keys
           method: get
   findOneKey:
       handler: handlers/keys.findOne
+      private: true
       events:
         - http:
             path: keys/{id}
@@ -89,24 +91,28 @@ functions:
   ### PLANS ###
   createPlan:
       handler: handlers/plans.create
+      private: true
       events:
         - http:
             path: plans
             method: post
   bulkInsertPlans:
       handler: handlers/plans.bulkInsert
+      private: true
       events:
         - http:
             path: plans
             method: put
   queryPlans:
       handler: handlers/plans.query
+      private: true
       events:
         - http:
             path: plans
             method: get
   findOnePlan:
       handler: handlers/plans.findOne
+      private: true
       events:
         - http:
             path: plans/{id}

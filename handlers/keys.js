@@ -148,7 +148,7 @@ module.exports.activate = async(event, context) => {
  * @param callback
  * @returns {Promise<T>}
  */
-module.exports.validate = (event, context, callback) => {
+module.exports.validate = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -158,33 +158,19 @@ module.exports.validate = (event, context, callback) => {
     data = JSON.parse(event.body);
   } catch (e) {}
 
-  if(!data.consumerId) return callback(null, response.badRequest("Missing required parameters"))
+  if(!data.identifier) return response.badRequest("Missing required parameters");
   const value = _.get(event, 'pathParameters.value');
 
-
-  return connectToDatabase()
-    .then(() => LicenseKeyModel.findOne({value: value}))
-    .then((key) => {
-
-      if(!key) return callback(null, response.notFound("Key not found"));
-
-      if(!key.activatedAt || !key.consumerId) return callback(null, response.badRequest("Key not activated"));
-
-      if(key.consumerId !== data.consumerId) {
-        return callback(null, response.forbidden("Invalid consumer"));
-      }
-
-      if(key.identifier !== data.identifier) {
-        return callback(null, response.forbidden("Invalid identifier"));
-      }
-
-      if(key.expiresAt < new Date().getTime()) {
-        return callback(null, response.forbidden("key expired"));
-      }
-
-      return key;
-
-    })
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try {
+    await connectToDatabase();
+    const license = await LicenseKeyModel.findOne({value: value});
+    if(!license) return response.notFound("Key not found");
+    if(!license.activatedAt) return response.badRequest("Key not activated");
+    if(license.identifier !== data.identifier) return response.badRequest("Identifier mismatch");
+    if(license.expiresAt < new Date().getTime()) return response.forbidden("key expired");
+    return response.ok(license);
+  }catch (e) {
+    console.log(e);
+    return response.negotiate(e);
+  }
 };
