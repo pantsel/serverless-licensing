@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Promise = require('bluebird');
 const mongoString = process.env.mongo_url; // MongoDB Url
 mongoose.Promise = Promise;
 let isConnected;
@@ -11,8 +10,14 @@ module.exports = connectToDatabase = () => {
   }
 
   console.log('=> using new database connection');
-  return mongoose.connect(mongoString)
+  return mongoose.connect(mongoString,
+    {
+      useCreateIndex: true,
+      useNewUrlParser: true,
+      useFindAndModify: false
+    })
     .then(db => {
       isConnected = db.connections[0].readyState;
     });
+
 };

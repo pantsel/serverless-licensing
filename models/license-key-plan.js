@@ -16,7 +16,19 @@ const schema = new mongoose.Schema({
     type: String
   },
   duration: {
-    type: String
+    type: String,
+    validate: {
+      validator: function(v) {
+        const validDurations = ['seconds','minutes', 'hours', 'days', 'weeks', 'months', 'years'];
+        const parts = v.split(" ");
+        if(parts.length !== 2) return false;
+        if(isNaN(parts[0])) return false;
+        if(validDurations.indexOf(parts[1]) < 0) return false;
+        return true;
+      },
+      message: props => `${props.value} is not a valid duration!`
+    },
+    required: [true, 'A duration is required']
   },
   createdAt: {
     type: Number

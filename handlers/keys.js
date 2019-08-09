@@ -1,7 +1,7 @@
 const LicenseKey = require('../lib/license-key');
 const connectToDatabase = require('../helpers/db');
 const LicenseKeyModel = require('../models/license-key');
-const LicenseKeyPlanModel = require('../models/license-key-plan');
+const Plan = require('../models/license-key-plan');
 const response = require('../helpers/response');
 const _ = require('lodash');
 const moment = require('moment');
@@ -14,7 +14,7 @@ const moment = require('moment');
  * @param callback
  * @returns {*}
  */
-module.exports.create = (event, context, callback) => {
+module.exports.create = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -22,22 +22,31 @@ module.exports.create = (event, context, callback) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {}
-
-  if (!data.serviceId || data.serviceId === 'undefined' || !data.plan) {
-    console.error('Validation Failed');
-    return callback(null, response.badRequest("Missing required parameters"));
+  } catch (e) {
+    return response.negotiate(e);
   }
 
-  return connectToDatabase()
-    .then(() => LicenseKeyPlanModel.findOne({alias: data.plan}))
-    .then((plan) => {
-      if(!plan) return callback(null, response.notFound("plan not found"));
-      let key = LicenseKey().generate(data.serviceId);
-      return LicenseKeyModel.create(_.merge(data, {value: key}, {plan: plan._id}))
-    })
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+  if (!data || !data.serviceId || data.serviceId === 'undefined') {
+    console.error('Validation Failed');
+    return response.badRequest("Missing required parameters");
+  }
+
+  try {
+    await connectToDatabase();
+    const plan = await Plan.findOne({
+      $or:[
+        {_id: data.plan},
+        {alias: data.plan}
+      ]
+    });
+    if(!plan) return response.badRequest("Invalid plan")
+
+    const key = LicenseKey().generate(data.serviceId);
+    const license = await LicenseKeyModel.create(_.merge(data, {plan: plan}, {value: key}));
+    return response.ok(license);
+  }catch (e) {
+    return response.negotiate(e)
+  }
 };
 
 /**
@@ -90,7 +99,7 @@ module.exports.findOne = (event, context, callback) => {
  * @param callback
  * @returns {Promise<T>}
  */
-module.exports.activate = (event, context, callback) => {
+module.exports.activate = async(event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -100,35 +109,35 @@ module.exports.activate = (event, context, callback) => {
     data = JSON.parse(event.body);
   } catch (e) {}
 
-  if(!data.consumerId) return callback(null, response.badRequest("Missing required parameters"))
+  if(!data.identifier) return response.badRequest("Missing required parameters: `identifier`");
   const value = _.get(event, 'pathParameters.value');
 
+  try {
+    await connectToDatabase();
+    const license = await LicenseKeyModel.findOne({value: value}).populate('plan');
+    if(!license) return response.notFound("License not found");
+    if(!license.plan) return response.badRequest("There is no plan assigned to the key");
+    if(license.activatedAt || license.identifier) return response.badRequest("Key already activated");
 
-  return connectToDatabase()
-    .then(() => LicenseKeyModel.findOne({value: value}).populate('plan'))
-    .then((key) => {
+    let now = new Date().getTime();
 
-      // Perform some checks
-      if(!key) return callback(null, response.notFound("Key not found"));
-      if(!key.plan) return callback(null, response.badRequest("There is no plan assigned to the key"));
-      if(key.activatedAt || key.consumerId) return callback(null, response.badRequest("Key already activated"));
+    license.identifier = data.identifier;
+    license.activatedAt = now;
 
-      let now = new Date().getTime();
+    // Create expiresAt based on the plan
+    let planDurationParts = license.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
+    let expiresAt = moment().add(planDurationParts[0],planDurationParts[1]);
+    license.expiresAt = expiresAt;
 
-      key.consumerId = data.consumerId;
-      if(data.identifier) key.identifier = data.identifier;
-      key.activatedAt = now;
+    if(data.extra && _.isObject(data.extra)) {
+      license.extra = data.extra;
+    }
 
-      // Create expiresAt based on the plan
-      let planDurationParts = key.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
-      let expiresAt = moment(now).add(planDurationParts[0],planDurationParts[1]);
-      key.expiresAt = expiresAt;
-
-      return key.save();
-
-    })
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+    await license.save();
+    return response.ok(license);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 

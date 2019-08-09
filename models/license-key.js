@@ -5,18 +5,31 @@ const schema = new mongoose.Schema({
   value: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    index: true
   },
+  // The id of the service or app the key is created for
   serviceId: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
-  consumerId: {
+
+  // A unique identifier of the consumer the key is activated for.
+  // ex. a device, an account, a specific session
+  identifier: {
     type: String
   },
+
   plan: {
+    required: true,
     type: mongoose.Schema.Types.ObjectId, ref: 'LicenseKeyPlan'
   },
+
+  extra: {
+    type: JSON
+  },
+
   activatedAt: {
     type: Number
   },
@@ -36,13 +49,13 @@ schema.plugin(mongoosePaginate);
  * Virtuals
  * @type {VirtualType}
  */
-var virtualStatus = schema.virtual('status');
+const virtualStatus = schema.virtual('status');
 virtualStatus.get(function () {
 
   let now = new Date().getTime();
 
   if (!this.activatedAt) {
-    return "pending"
+    return "pending_activation"
   }
 
 
@@ -60,7 +73,7 @@ schema.set('toJSON', {
 });
 
 schema.pre('save', function (next) {
-  now = new Date().getTime();
+  let now = new Date().getTime();
   this.updatedAt = now;
   if (!this.createdAt) {
     this.createdAt = now;
@@ -68,6 +81,6 @@ schema.pre('save', function (next) {
   next();
 });
 
-var LicenseKey = mongoose.model('LicenseKey', schema);
+const LicenseKey = mongoose.model('LicenseKey', schema);
 
 module.exports = LicenseKey;
