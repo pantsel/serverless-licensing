@@ -164,10 +164,10 @@ module.exports.validate = async (event, context) => {
   try {
     await connectToDatabase();
     const license = await LicenseKeyModel.findOne({value: value});
-    if(!license) return response.notFound("Key not found");
-    if(!license.activatedAt) return response.badRequest("Key not activated");
+    if(!license) return response.notFound("License not found");
+    if(!license.activatedAt) return response.badRequest("License not activated");
     if(license.identifier !== data.identifier) return response.badRequest("Identifier mismatch");
-    if(license.expiresAt < new Date().getTime()) return response.forbidden("key expired");
+    if(license.expiresAt < new Date().getTime()) return response.forbidden("License expired");
     return response.ok(license);
   }catch (e) {
     console.log(e);
