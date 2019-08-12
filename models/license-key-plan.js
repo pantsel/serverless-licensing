@@ -50,9 +50,13 @@ schema.pre('save', function (next) {
   next();
 });
 
-schema.pre('remove', function(next) {
+schema.pre('remove', async function(next) {
   // Check if there are any Licenses using this plan.
-  return next(new Errors.BadRequestError('The plan cannot be deleted because there are licenses still using it. Remove those licenses first.'));
+  const licenses = await License.find({plan: this._id});
+  if(licenses.length) {
+    return next(new Errors.BadRequestError('The plan cannot be deleted because there are licenses still using it. Remove those licenses first.'));
+  }
+  return next;
 });
 
 const LicenseKeyPlan = mongoose.model('LicenseKeyPlan', schema);
