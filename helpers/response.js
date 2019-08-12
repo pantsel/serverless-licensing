@@ -18,21 +18,9 @@ module.exports = {
       }
     }
 
-
-
     // Handle mongoose duplicate key error E11000
     if(err.message && err.message.indexOf('E11000') > -1) {
       statusCode = 409;
-    }
-
-    if(err.message && err.message.indexOf('validation failed') > -1) {
-      statusCode = 400;
-    }
-
-
-    if(err.message && err.message.indexOf('[400]') > -1) {
-      statusCode = 400;
-      err.message = err.message.replace('[400]', '');
     }
 
     return {
