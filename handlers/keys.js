@@ -146,7 +146,15 @@ module.exports.activate = async(event, context) => {
       license.extra = data.extra;
     }
 
+    // Expire the existing license if needed
+    if(existingActiveKeyForIdentifier) {
+      existingActiveKeyForIdentifier.expiresAt = now;
+      await existingActiveKeyForIdentifier.save();
+    }
+
+    // Save new License
     await license.save();
+
     return response.ok(license);
   }catch (e) {
     return response.negotiate(e);
