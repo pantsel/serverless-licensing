@@ -11,6 +11,7 @@ A simple licensing service build with the Serverless framework.
 * Define plans
 * Generate licenses and license keys
 * Activate / Validate licenses
+* Checksum
 
 ## Environment variables
 
