@@ -32,6 +32,29 @@ module.exports.create = (event, context, callback) => {
 };
 
 /**
+ * Create a plan
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
+module.exports.delete = async (event, context) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  try{
+    await connectToDatabase();
+    const planId = _.get(event, 'pathParameters.id');
+    const plan = await LicenseKeyPlanModel.findById(planId);
+    if(!plan) return response.notFound("Plan not found");
+    const res = await plan.remove();
+    return response.ok(res);
+  }catch (e) {
+    return response.negotiate(e);
+  }
+};
+
+/**
  * Bulk insert plans
  * @param event
  * @param context

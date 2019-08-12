@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
+const License = require('./license-key');
+const Errors = require('../helpers/errors');
 
 const schema = new mongoose.Schema({
   name: {
@@ -48,6 +50,11 @@ schema.pre('save', function (next) {
   next();
 });
 
-var LicenseKeyPlan = mongoose.model('LicenseKeyPlan', schema);
+schema.pre('remove', function(next) {
+  // Check if there are any Licenses using this plan.
+  return next(new Errors.BadRequestError('The plan cannot be deleted because there are licenses still using it. Remove those licenses first.'));
+});
+
+const LicenseKeyPlan = mongoose.model('LicenseKeyPlan', schema);
 
 module.exports = LicenseKeyPlan;

@@ -1,9 +1,24 @@
+const Errors = require('./errors');
+
 const _ = require('lodash');
 
 module.exports = {
   negotiate: (err) => {
 
     let statusCode = err.statusCode || 500;
+
+    if(_.isError(err)) {
+      if(err instanceof Errors.ForbiddenError) {
+        statusCode = 403;
+      }else if (err instanceof Errors.BadRequestError) {
+        statusCode = 400;
+      }
+      err = {
+        message: err.message
+      }
+    }
+
+
 
     // Handle mongoose duplicate key error E11000
     if(err.message && err.message.indexOf('E11000') > -1) {
@@ -17,7 +32,7 @@ module.exports = {
 
     if(err.message && err.message.indexOf('[400]') > -1) {
       statusCode = 400;
-      message = err.message.replace('[400]', '');
+      err.message = err.message.replace('[400]', '');
     }
 
     return {

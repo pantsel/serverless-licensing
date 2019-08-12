@@ -117,6 +117,13 @@ functions:
             path: plans/{id}
             method: get
             private: true
+  deletePlan:
+    handler: handlers/plans.delete
+    events:
+      - http:
+          path: plans/{id}
+          method: delete
+          private: true
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
