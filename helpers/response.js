@@ -12,6 +12,10 @@ module.exports = {
         statusCode = 403;
       }else if (err instanceof Errors.BadRequestError) {
         statusCode = 400;
+      }else if (err instanceof Errors.UnauthorizedError) {
+        statusCode = 401;
+      }else if (err instanceof Errors.ConflictError) {
+        statusCode = 409;
       }
       err = {
         message: err.message
