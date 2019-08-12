@@ -59,6 +59,6 @@ schema.pre('remove', async function(next) {
   return next;
 });
 
-const LicenseKeyPlan = mongoose.model('LicenseKeyPlan', schema);
+const Plan = mongoose.model('Plan', schema);
 
-module.exports = LicenseKeyPlan;
+module.exports = Plan;

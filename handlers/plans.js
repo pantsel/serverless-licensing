@@ -1,5 +1,5 @@
 const connectToDatabase = require('../helpers/db');
-const LicenseKeyPlanModel = require('../models/license-key-plan');
+const Plan = require('../models/plan');
 const response = require('../helpers/response');
 const _ = require('lodash');
 const slug = require('slug');
@@ -26,7 +26,7 @@ module.exports.create = (event, context, callback) => {
   data.alias = slug(data.name).toLowerCase();
 
   return connectToDatabase()
-    .then(() => LicenseKeyPlanModel.create(data))
+    .then(() => Plan.create(data))
     .then(doc => callback(null, response.ok(doc)))
     .catch(err => callback(null, response.negotiate(err)));
 };
@@ -45,7 +45,7 @@ module.exports.delete = async (event, context) => {
   try{
     await connectToDatabase();
     const planId = _.get(event, 'pathParameters.id');
-    const plan = await LicenseKeyPlanModel.findById(planId);
+    const plan = await Plan.findById(planId);
     if(!plan) return response.notFound("Plan not found");
     const res = await plan.remove();
     return response.ok(res);
@@ -84,7 +84,7 @@ module.exports.bulkInsert = (event, context, callback) => {
   })
 
   return connectToDatabase()
-    .then(() => LicenseKeyPlanModel.insertMany(data))
+    .then(() => Plan.insertMany(data))
     .then(docs => callback(null, response.ok(docs)))
     .catch(err => callback(null, response.negotiate(err)));
 };
@@ -107,7 +107,7 @@ module.exports.query = (event, context, callback) => {
   }
 
   return connectToDatabase()
-    .then(() => LicenseKeyPlanModel.paginate({}, options))
+    .then(() => Plan.paginate({}, options))
     .then(docs => callback(null, response.ok(docs)))
     .catch(err => callback(null, response.negotiate(err)));
 };
@@ -126,7 +126,7 @@ module.exports.findOne = (event, context, callback) => {
   const identifier = _.get(event, 'pathParameters.id');
 
   return connectToDatabase()
-    .then(() => LicenseKeyPlanModel.findById(identifier))
+    .then(() => Plan.findById(identifier))
     .then(doc => callback(null, response.ok(doc)))
     .catch(err => callback(null, response.negotiate(err)));
 };

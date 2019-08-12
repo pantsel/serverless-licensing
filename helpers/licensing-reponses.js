@@ -39,5 +39,11 @@ module.exports = {
     message: 'Missing required parameters',
     id: 'MISSING_PARAMETERS',
     statusCode: 400
+  },
+
+  SERVICE_ID_MISMATCH: {
+    message: 'serviceId mismatch',
+    id: 'SERVICE_ID_MISMATCH',
+    statusCode: 400
   }
 }

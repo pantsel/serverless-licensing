@@ -23,7 +23,7 @@ const schema = new mongoose.Schema({
 
   plan: {
     required: true,
-    type: mongoose.Schema.Types.ObjectId, ref: 'LicenseKeyPlan'
+    type: mongoose.Schema.Types.ObjectId, ref: 'Plan'
   },
 
   extra: {

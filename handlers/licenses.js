@@ -2,7 +2,7 @@ const LicenseKey = require('../lib/license-key');
 const mongoose = require('mongoose');
 const connectToDatabase = require('../helpers/db');
 const License = require('../models/license');
-const Plan = require('../models/license-key-plan');
+const Plan = require('../models/plan');
 const response = require('../helpers/response');
 const _ = require('lodash');
 const moment = require('moment');
@@ -128,7 +128,7 @@ module.exports.activate = async(event, context) => {
     data = JSON.parse(event.body);
   } catch (e) {}
 
-  if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
+  if(!data.identifier || !data.serviceId) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const key = _.get(event, 'pathParameters.value');
 
   try {
@@ -136,6 +136,7 @@ module.exports.activate = async(event, context) => {
     const license = await License.findOne({key: key}).populate('plan');
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     if(!license.plan) return response.negotiate(LicensingResponses.NO_PLAN_TO_LICENSE);
+    if(license.serviceId !== data.serviceId) return response.negotiate(LicensingResponses.SERVICE_ID_MISMATCH);
     if(license.activatedAt || license.identifier) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
 
     // Check if there's an existing active license for the given identifier and serviceId.
