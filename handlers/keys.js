@@ -5,6 +5,7 @@ const Plan = require('../models/license-key-plan');
 const response = require('../helpers/response');
 const _ = require('lodash');
 const moment = require('moment');
+const LicensingResponses = require('../helpers/licensing-reponses');
 
 
 /**
@@ -109,15 +110,15 @@ module.exports.activate = async(event, context) => {
     data = JSON.parse(event.body);
   } catch (e) {}
 
-  if(!data.identifier) return response.badRequest("Missing required parameters: `identifier`");
+  if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const value = _.get(event, 'pathParameters.value');
 
   try {
     await connectToDatabase();
     const license = await LicenseKeyModel.findOne({value: value}).populate('plan');
-    if(!license) return response.notFound("License not found");
-    if(!license.plan) return response.badRequest("There is no plan assigned to the key");
-    if(license.activatedAt || license.identifier) return response.badRequest("Key already activated");
+    if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+    if(!license.plan) return response.negotiate(LicensingResponses.NO_PLAN_TO_LICENSE);
+    if(license.activatedAt || license.identifier) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
 
     // Check if there's an existing active license for the given identifier and serviceId.
     // If that's the case, we will need to extend the newly activated license's expiry based
@@ -179,16 +180,16 @@ module.exports.validate = async (event, context) => {
     data = JSON.parse(event.body);
   } catch (e) {}
 
-  if(!data.identifier) return response.badRequest("Missing required parameters");
+  if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const value = _.get(event, 'pathParameters.value');
 
   try {
     await connectToDatabase();
     const license = await LicenseKeyModel.findOne({value: value});
-    if(!license) return response.notFound("License not found");
-    if(!license.activatedAt) return response.badRequest("License not activated");
-    if(license.identifier !== data.identifier) return response.badRequest("Identifier mismatch");
-    if(license.expiresAt < new Date().getTime()) return response.forbidden("License expired");
+    if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+    if(!license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_NOT_ACTIVE);
+    if(license.identifier !== data.identifier) return response.negotiate(LicensingResponses.IDENTIFIER_MISMATCH);
+    if(license.expiresAt < new Date().getTime()) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
     return response.ok(license);
   }catch (e) {
     console.log(e);
