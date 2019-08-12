@@ -1,5 +1,7 @@
 # Simple Serverless Licensing
 
+> This project is still under development
+
 A simple licensing service build with the Serverless framework.
 
 ## Tools
