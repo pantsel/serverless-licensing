@@ -2,10 +2,15 @@
 
 A simple licensing service build with the Serverless framework.
 
-### Tools
+## Tools
 * Node.js
 * MongoDB
 * Serverless Framework
+
+## Features
+* Define plans
+* Generate licenses and license keys
+* Activate / Validate licenses
 
 ## Environment variables
 
