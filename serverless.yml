@@ -56,25 +56,25 @@ functions:
   ### KEYS ###
   createKey:
     handler: handlers/keys.create
-    private: true
     events:
       - http:
           path: keys
           method: post
+          private: true
   queryKeys:
     handler: handlers/keys.query
-    private: true
     events:
       - http:
           path: keys
           method: get
+          private: true
   findOneKey:
       handler: handlers/keys.findOne
-      private: true
       events:
         - http:
             path: keys/{id}
             method: get
+            private: true
   activateKey:
       handler: handlers/keys.activate
       events:
@@ -91,32 +91,32 @@ functions:
   ### PLANS ###
   createPlan:
       handler: handlers/plans.create
-      private: true
       events:
         - http:
             path: plans
             method: post
+            private: true
   bulkInsertPlans:
       handler: handlers/plans.bulkInsert
-      private: true
       events:
         - http:
             path: plans
             method: put
+            private: true
   queryPlans:
       handler: handlers/plans.query
-      private: true
       events:
         - http:
             path: plans
             method: get
+            private: true
   findOnePlan:
       handler: handlers/plans.findOne
-      private: true
       events:
         - http:
             path: plans/{id}
             method: get
+            private: true
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

@@ -119,16 +119,29 @@ module.exports.activate = async(event, context) => {
     if(!license.plan) return response.badRequest("There is no plan assigned to the key");
     if(license.activatedAt || license.identifier) return response.badRequest("Key already activated");
 
+    // Check if there's an existing active license for the given identifier and serviceId.
+    // If that's the case, we will need to extend the newly activated license's expiry based
+    // on the existing license's remaining time
+    const existingActiveKeyForIdentifier = await LicenseKeyModel.findOne({
+      identifier: data.identifier,
+      serviceId: license.serviceId,
+      expiresAt: {
+        $gte: new Date().getTime()
+      }
+    })
+
     let now = new Date().getTime();
+    let licenseStartTime = existingActiveKeyForIdentifier ? existingActiveKeyForIdentifier.expiresAt : now;
 
     license.identifier = data.identifier;
     license.activatedAt = now;
 
     // Create expiresAt based on the plan
     let planDurationParts = license.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
-    let expiresAt = moment().add(planDurationParts[0],planDurationParts[1]);
+    let expiresAt = moment(licenseStartTime).add(planDurationParts[0],planDurationParts[1]);
     license.expiresAt = expiresAt;
 
+    // Finally, add extra info if provided
     if(data.extra && _.isObject(data.extra)) {
       license.extra = data.extra;
     }
