@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
 
 const schema = new mongoose.Schema({
-  value: {
+  key: {
     type: String,
     required: true,
     unique: true,
@@ -81,6 +81,6 @@ schema.pre('save', function (next) {
   next();
 });
 
-const LicenseKey = mongoose.model('LicenseKey', schema);
+const License = mongoose.model('LicenseKey', schema);
 
-module.exports = LicenseKey;
+module.exports = License;

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate');
-const License = require('./license-key');
+const License = require('./license');
 const Errors = require('../helpers/errors');
 
 const schema = new mongoose.Schema({

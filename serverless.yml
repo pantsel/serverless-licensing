@@ -55,37 +55,37 @@ custom:
 functions:
   ### KEYS ###
   createKey:
-    handler: handlers/keys.create
+    handler: handlers/licenses.create
     events:
       - http:
-          path: keys
+          path: licenses
           method: post
           private: true
   queryKeys:
-    handler: handlers/keys.query
+    handler: handlers/licenses.query
     events:
       - http:
-          path: keys
+          path: licenses
           method: get
           private: true
   findOneKey:
-      handler: handlers/keys.findOne
+      handler: handlers/licenses.findOne
       events:
         - http:
-            path: keys/{id}
+            path: licenses/{id}
             method: get
             private: true
   activateKey:
-      handler: handlers/keys.activate
+      handler: handlers/licenses.activate
       events:
         - http:
-            path: keys/{value}/activate
+            path: licenses/{value}/activate
             method: post
   validateKey:
-      handler: handlers/keys.validate
+      handler: handlers/licenses.validate
       events:
         - http:
-            path: keys/{value}/validate
+            path: licenses/{value}/validate
             method: post
 
   ### PLANS ###

@@ -1,7 +1,7 @@
 const LicenseKey = require('../lib/license-key');
 const mongoose = require('mongoose');
 const connectToDatabase = require('../helpers/db');
-const LicenseKeyModel = require('../models/license-key');
+const License = require('../models/license');
 const Plan = require('../models/license-key-plan');
 const response = require('../helpers/response');
 const _ = require('lodash');
@@ -10,11 +10,10 @@ const LicensingResponses = require('../helpers/licensing-reponses');
 
 
 /**
- * Create a new License key
+ * Create a new License
  * @param event
  * @param context
- * @param callback
- * @returns {*}
+ * @returns {Promise<T>}
  */
 module.exports.create = async (event, context) => {
 
@@ -44,7 +43,7 @@ module.exports.create = async (event, context) => {
     if(!plan) return response.badRequest("Invalid plan")
 
     const key = LicenseKey().generate(data.serviceId);
-    const license = await LicenseKeyModel.create(_.merge(data, {plan: plan}, {value: key}));
+    const license = await License.create(_.merge(data, {plan: plan}, {key: key}));
     return response.ok(license);
   }catch (e) {
     return response.negotiate(e)
@@ -52,10 +51,9 @@ module.exports.create = async (event, context) => {
 };
 
 /**
- * Query License keys
+ * Query Licenses
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
 module.exports.query = async(event, context) => {
@@ -79,7 +77,7 @@ module.exports.query = async(event, context) => {
 
   try {
     await connectToDatabase();
-    const results = await LicenseKeyModel.paginate(_.pickBy(criteria, _.identity), options);
+    const results = await License.paginate(_.pickBy(criteria, _.identity), options);
     return response.ok(results);
   }catch (e) {
     return response.negotiate(e);
@@ -87,10 +85,9 @@ module.exports.query = async(event, context) => {
 };
 
 /**
- * Find a specific key using its id or value
+ * Find a specific License using its _id or key
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
 module.exports.findOne = async (event, context) => {
@@ -104,9 +101,9 @@ module.exports.findOne = async (event, context) => {
     if(mongoose.Types.ObjectId.isValid(identifier)) {
       criteria._id = identifier
     }else{
-      criteria.value = identifier;
+      criteria.key = identifier;
     }
-    const license =  await LicenseKeyModel.findOne(criteria);
+    const license =  await License.findOne(criteria);
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     return response.ok(license);
   }catch (e) {
@@ -116,10 +113,9 @@ module.exports.findOne = async (event, context) => {
 
 
 /**
- * Activate a specific key
+ * Activate a specific License
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
 module.exports.activate = async(event, context) => {
@@ -133,11 +129,11 @@ module.exports.activate = async(event, context) => {
   } catch (e) {}
 
   if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
-  const value = _.get(event, 'pathParameters.value');
+  const key = _.get(event, 'pathParameters.value');
 
   try {
     await connectToDatabase();
-    const license = await LicenseKeyModel.findOne({value: value}).populate('plan');
+    const license = await License.findOne({key: key}).populate('plan');
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     if(!license.plan) return response.negotiate(LicensingResponses.NO_PLAN_TO_LICENSE);
     if(license.activatedAt || license.identifier) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
@@ -145,7 +141,7 @@ module.exports.activate = async(event, context) => {
     // Check if there's an existing active license for the given identifier and serviceId.
     // If that's the case, we will need to extend the newly activated license's expiry based
     // on the existing license's remaining time
-    const existingActiveKeyForIdentifier = await LicenseKeyModel.findOne({
+    const existingActiveKeyForIdentifier = await License.findOne({
       identifier: data.identifier,
       serviceId: license.serviceId,
       expiresAt: {
@@ -186,10 +182,9 @@ module.exports.activate = async(event, context) => {
 
 
 /**
- * Validate a specific key
+ * Validate a specific License
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
 module.exports.validate = async (event, context) => {
@@ -203,11 +198,11 @@ module.exports.validate = async (event, context) => {
   } catch (e) {}
 
   if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
-  const value = _.get(event, 'pathParameters.value');
+  const key = _.get(event, 'pathParameters.value');
 
   try {
     await connectToDatabase();
-    const license = await LicenseKeyModel.findOne({value: value});
+    const license = await License.findOne({key: key});
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     if(!license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_NOT_ACTIVE);
     if(license.identifier !== data.identifier) return response.negotiate(LicensingResponses.IDENTIFIER_MISMATCH);
