@@ -1,4 +1,5 @@
 const LicenseKey = require('../lib/license-key');
+const mongoose = require('mongoose');
 const connectToDatabase = require('../helpers/db');
 const LicenseKeyModel = require('../models/license-key');
 const Plan = require('../models/license-key-plan');
@@ -57,7 +58,7 @@ module.exports.create = async (event, context) => {
  * @param callback
  * @returns {Promise<T>}
  */
-module.exports.query = (event, context, callback) => {
+module.exports.query = async(event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -67,10 +68,22 @@ module.exports.query = (event, context, callback) => {
     sort: _.get(event, 'queryStringParameters.sort') ? event.queryStringParameters.sort : {createdAt: -1}
   }
 
-  return connectToDatabase()
-    .then(() => LicenseKeyModel.paginate({}, options))
-    .then(docs => callback(null, response.ok(docs)))
-    .catch(err => callback(null, response.negotiate(err)));
+  const criteria = {
+    status: _.get(event, 'queryStringParameters.status'),
+    serviceId: _.get(event, 'queryStringParameters.serviceId'),
+    plan: _.get(event, 'queryStringParameters.plan'),
+    identifier: _.get(event, 'queryStringParameters.identifier')
+  }
+
+  console.log("criteria => ", _.pickBy(criteria, _.identity))
+
+  try {
+    await connectToDatabase();
+    const results = await LicenseKeyModel.paginate(_.pickBy(criteria, _.identity), options);
+    return response.ok(results);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 /**
@@ -80,16 +93,25 @@ module.exports.query = (event, context, callback) => {
  * @param callback
  * @returns {Promise<T>}
  */
-module.exports.findOne = (event, context, callback) => {
+module.exports.findOne = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
-  const identifier = _.get(event, 'pathParameters.id');
-
-  return connectToDatabase()
-    .then(() => LicenseKeyModel.findById(identifier))
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try{
+    await connectToDatabase();
+    const identifier = _.get(event, 'pathParameters.id');
+    let criteria = {};
+    if(mongoose.Types.ObjectId.isValid(identifier)) {
+      criteria._id = identifier
+    }else{
+      criteria.value = identifier;
+    }
+    const license =  await LicenseKeyModel.findOne(criteria);
+    if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+    return response.ok(license);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 
