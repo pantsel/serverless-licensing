@@ -42,7 +42,11 @@ module.exports.create = async (event, context) => {
     });
     if(!plan) return response.badRequest("Invalid plan")
 
-    const key = LicenseKey().generate(data.serviceId);
+    let key;
+    do {
+      key = LicenseKey().generate(data.serviceId);
+    }while (await License.count({key: key}) > 0);
+
     const license = await License.create(_.merge(data, {plan: plan}, {key: key}));
     return response.ok(license);
   }catch (e) {
