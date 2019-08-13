@@ -178,7 +178,6 @@ module.exports.activate = async(event, context) => {
       }
     })
 
-
     let licenseStartTime = existingActiveKeyForIdentifier ? existingActiveKeyForIdentifier.expiresAt : now;
 
     license.identifier = data.identifier;
