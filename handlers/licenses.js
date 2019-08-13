@@ -71,10 +71,32 @@ module.exports.query = async(event, context) => {
   }
 
   const criteria = {
-    status: _.get(event, 'queryStringParameters.status'),
     serviceId: _.get(event, 'queryStringParameters.serviceId'),
     plan: _.get(event, 'queryStringParameters.plan'),
     identifier: _.get(event, 'queryStringParameters.identifier')
+  }
+
+  const status = _.get(event, 'queryStringParameters.status');
+  const now = new Date().getTime();
+  switch (status) {
+    case "pending_activation":
+      criteria.activatedAt = {
+        $exists: false
+      }
+      break;
+    case "active":
+      criteria.activatedAt = {
+        $lte: now
+      }
+      criteria.expiresAt = {
+        $gte: now
+      }
+      break;
+    case "expired":
+      criteria.expiresAt = {
+        $lt: now
+      }
+      break;
   }
 
   console.log("criteria => ", _.pickBy(criteria, _.identity))

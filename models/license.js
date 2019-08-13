@@ -42,6 +42,9 @@ const schema = new mongoose.Schema({
   updatedAt: {
     type: Number
   }
+}, {
+  toObject: { virtuals: true },
+  toJSON: { virtuals: true }
 });
 schema.plugin(mongoosePaginate);
 
@@ -66,10 +69,6 @@ virtualStatus.get(function () {
   if (this.expiresAt < now) {
     return "expired"
   }
-});
-
-schema.set('toJSON', {
-  virtuals: true
 });
 
 schema.pre('save', function (next) {
