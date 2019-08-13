@@ -156,6 +156,7 @@ module.exports.activate = async(event, context) => {
 
   if(!data.identifier || !data.serviceId) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const key = _.get(event, 'pathParameters.value');
+  let now = new Date().getTime();
 
   try {
     await connectToDatabase();
@@ -163,6 +164,7 @@ module.exports.activate = async(event, context) => {
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     if(!license.plan) return response.negotiate(LicensingResponses.NO_PLAN_TO_LICENSE);
     if(license.serviceId !== data.serviceId) return response.negotiate(LicensingResponses.SERVICE_ID_MISMATCH);
+    if(license.expiresAt && license.expiresAt < now) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
     if(license.activatedAt || license.identifier) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
 
     // Check if there's an existing active license for the given identifier and serviceId.
@@ -172,11 +174,11 @@ module.exports.activate = async(event, context) => {
       identifier: data.identifier,
       serviceId: license.serviceId,
       expiresAt: {
-        $gte: new Date().getTime()
+        $gte: now
       }
     })
 
-    let now = new Date().getTime();
+
     let licenseStartTime = existingActiveKeyForIdentifier ? existingActiveKeyForIdentifier.expiresAt : now;
 
     license.identifier = data.identifier;
