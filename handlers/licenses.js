@@ -67,7 +67,7 @@ module.exports.query = async(event, context) => {
   let options = {
     page: _.get(event, 'queryStringParameters.page') ? parseInt(event.queryStringParameters.page) : 1,
     limit: _.get(event, 'queryStringParameters.limit') ? parseInt(event.queryStringParameters.limit) : 25,
-    sort: _.get(event, 'queryStringParameters.sort') ? event.queryStringParameters.sort : {createdAt: -1}
+    sort: _.get(event, 'queryStringParameters.sort', {createdAt: -1})
   }
 
   const criteria = {
