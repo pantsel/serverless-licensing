@@ -41,7 +41,7 @@ provider:
 
 custom:
   serverless-offline:
-    host:  ${env:HOST, 'localhost'}
+    host:  ${env:HOST, '192.168.2.156'}
     port:  ${env:PORT, 3000}
 
 # you can add packaging information here
