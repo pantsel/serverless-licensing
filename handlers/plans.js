@@ -58,10 +58,9 @@ module.exports.delete = async (event, context) => {
  * Bulk insert plans
  * @param event
  * @param context
- * @param callback
  * @returns {*}
  */
-module.exports.bulkInsert = (event, context, callback) => {
+module.exports.bulkInsert = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -83,10 +82,13 @@ module.exports.bulkInsert = (event, context, callback) => {
     item.updatedAt = now;
   })
 
-  return connectToDatabase()
-    .then(() => Plan.insertMany(data))
-    .then(docs => callback(null, response.ok(docs)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try {
+    await connectToDatabase();
+    const docs = await Plan.insertMany(data);
+    return response.ok(docs);
+  } catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 /**
