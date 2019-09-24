@@ -181,6 +181,8 @@ module.exports.activate = async(event, context) => {
     let licenseStartTime = existingActiveKeyForIdentifier ? existingActiveKeyForIdentifier.expiresAt : now;
 
     license.identifier = data.identifier;
+    license.customerId = data.customerId;
+    license.comments = data.comments;
     license.activatedAt = now;
 
     // Create expiresAt based on the plan
