@@ -93,10 +93,9 @@ module.exports.bulkInsert = (event, context, callback) => {
  * Query plans
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
-module.exports.query = (event, context, callback) => {
+module.exports.query = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -106,27 +105,31 @@ module.exports.query = (event, context, callback) => {
     sort: _.get(event, 'queryStringParameters.sort') ? event.queryStringParameters.sort : {createdAt: -1}
   }
 
-  return connectToDatabase()
-    .then(() => Plan.paginate({}, options))
-    .then(docs => callback(null, response.ok(docs)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try{
+    await connectToDatabase();
+    const plans = await Plan.paginate({}, options);
+    return response.ok(plans);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 /**
  * Find a specific plan
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
-module.exports.findOne = (event, context, callback) => {
+module.exports.findOne = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
   const identifier = _.get(event, 'pathParameters.id');
 
-  return connectToDatabase()
-    .then(() => Plan.findById(identifier))
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try {
+    const plan = await Plan.findById(identifier);
+    return response.ok(plan);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
