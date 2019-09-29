@@ -37,7 +37,7 @@ provider:
   apiName: sls-licensing-${opt:stage, 'dev'} # Use a custom name for the API Gateway API
   endpointType: regional # Optional endpoint configuration for API Gateway REST API. Default is Edge.
   environment:
-    mongo_url:${env:MONGO_URL}
+    mongo_url: ${env:MONGO_URL, 'mongodb://127.0.0.1:27017/sls-licensing'}
 
 custom:
   serverless-offline:
