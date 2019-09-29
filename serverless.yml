@@ -22,7 +22,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs10.16
+  runtime: nodejs10.x
   apiKeys:
     - sls-licensing-${opt:stage, 'dev'}
   memorySize: 128 # Overwrite the default memory size. Default is 1024
@@ -80,13 +80,13 @@ functions:
     handler: handlers/licenses.activate
     events:
       - http:
-          path: licenses/{value}/activate
+          path: licenses/activate/{value}
           method: post
   validateKey:
     handler: handlers/licenses.validate
     events:
       - http:
-          path: licenses/{value}/validate
+          path: licenses/validate/{value}
           method: post
 
   ### PLANS ###
@@ -115,15 +115,15 @@ functions:
     handler: handlers/plans.findOne
     events:
       - http:
-          path: plans/{id}
           method: get
+          path: plans/{id}
           private: true
   deletePlan:
     handler: handlers/plans.delete
     events:
       - http:
-          path: plans/{id}
           method: delete
+          path: plans/remove/{id}
           private: true
 
 #    The following are a few example events you can configure
