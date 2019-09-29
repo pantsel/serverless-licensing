@@ -70,54 +70,54 @@ functions:
           method: get
           private: true
   findOneKey:
-      handler: handlers/licenses.findOne
-      events:
-        - http:
-            path: licenses/{id}
-            method: get
-            private: true
+    handler: handlers/licenses.findOne
+    events:
+      - http:
+          path: licenses/{id}
+          method: get
+          private: true
   activateKey:
-      handler: handlers/licenses.activate
-      events:
-        - http:
-            path: licenses/{value}/activate
-            method: post
+    handler: handlers/licenses.activate
+    events:
+      - http:
+          path: licenses/{value}/activate
+          method: post
   validateKey:
-      handler: handlers/licenses.validate
-      events:
-        - http:
-            path: licenses/{value}/validate
-            method: post
+    handler: handlers/licenses.validate
+    events:
+      - http:
+          path: licenses/{value}/validate
+          method: post
 
   ### PLANS ###
   createPlan:
-      handler: handlers/plans.create
-      events:
-        - http:
-            path: plans
-            method: post
-            private: true
+    handler: handlers/plans.create
+    events:
+      - http:
+          path: plans
+          method: post
+          private: true
   bulkInsertPlans:
-      handler: handlers/plans.bulkInsert
-      events:
-        - http:
-            path: plans
-            method: put
-            private: true
+    handler: handlers/plans.bulkInsert
+    events:
+      - http:
+          path: plans
+          method: put
+          private: true
   queryPlans:
-      handler: handlers/plans.query
-      events:
-        - http:
-            path: plans
-            method: get
-            private: true
+    handler: handlers/plans.query
+    events:
+      - http:
+          path: plans
+          method: get
+          private: true
   findOnePlan:
-      handler: handlers/plans.findOne
-      events:
-        - http:
-            path: plans/{id}
-            method: get
-            private: true
+    handler: handlers/plans.findOne
+    events:
+      - http:
+          path: plans/{id}
+          method: get
+          private: true
   deletePlan:
     handler: handlers/plans.delete
     events:
