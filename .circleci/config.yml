@@ -26,10 +26,7 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run:
-          - npm i -g serverless
-          - npm i --production
-          - sls deploy --stage prod
+      - run: npm i -g serverless && npm i --production && sls deploy --stage prod
 
       - save_cache:
           paths:
