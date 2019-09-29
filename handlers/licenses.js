@@ -129,7 +129,7 @@ module.exports.findOne = async (event, context) => {
     }else{
       criteria.key = identifier;
     }
-    const license =  await License.findOne(criteria);
+    const license =  await License.findOne(criteria).populate('plan');
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     return response.ok(license);
   }catch (e) {
