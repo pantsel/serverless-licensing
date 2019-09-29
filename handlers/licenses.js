@@ -187,7 +187,7 @@ module.exports.activate = async(event, context) => {
 
     // Create expiresAt based on the plan
     let planDurationParts = license.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
-    let expiresAt = moment(licenseStartTime).add(planDurationParts[0],planDurationParts[1]);
+    let expiresAt = moment(licenseStartTime).add(planDurationParts[0], planDurationParts[1]);
     license.expiresAt = expiresAt;
 
     // Finally, add extra info if provided
