@@ -12,7 +12,7 @@ const slug = require('slug');
  * @param callback
  * @returns {*}
  */
-module.exports.create = (event, context, callback) => {
+module.exports.create = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -25,10 +25,13 @@ module.exports.create = (event, context, callback) => {
   // Create alias
   data.alias = slug(data.name).toLowerCase();
 
-  return connectToDatabase()
-    .then(() => Plan.create(data))
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try {
+    await connectToDatabase();
+    const plan = await Plan.create(data);
+    return response.ok(plan);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 /**
