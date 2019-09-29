@@ -32,7 +32,7 @@ jobs:
       - run:
           name: Install Serverless CLI and dependencies
           command: |
-            sudo npm i -g sls@1.21
+            sudo npm i -g serverless@1.21
             npm install
 
       - save_cache:
