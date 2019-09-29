@@ -118,13 +118,15 @@ functions:
           method: get
           path: plans/{id}
           private: true
+          cors: true
   deletePlan:
     handler: handlers/plans.delete
     events:
       - http:
           method: delete
-          path: plans/remove/{id}
+          path: plans/{id}
           private: true
+          cors: true
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
