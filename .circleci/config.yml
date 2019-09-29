@@ -5,6 +5,9 @@
 version: 2
 jobs:
   build:
+    filters:
+      branches:
+        only: master
     docker:
       # specify the version you desire here
       - image: circleci/node:10.16
@@ -26,9 +29,17 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: npm i -g serverless && npm i --production && sls deploy --stage prod
+      - run:
+          name: Install Serverless CLI and dependencies
+          command: |
+            sudo npm i -g serverless
+            npm install
 
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run:
+          name: Deploy application
+          command: sls deploy --stage prod
