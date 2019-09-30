@@ -1,6 +1,6 @@
 {
   "name": "sls-licensing-service",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "aisolutions.gr software licensing service",
   "main": "handler.js",
   "dependencies": {
