@@ -165,7 +165,7 @@ module.exports.activate = async(event, context) => {
     if(!license.plan) return response.negotiate(LicensingResponses.NO_PLAN_TO_LICENSE);
     if(license.serviceId !== data.serviceId) return response.negotiate(LicensingResponses.SERVICE_ID_MISMATCH);
     if(license.expiresAt && license.expiresAt < now) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
-    if(license.activatedAt || license.identifier) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
+    if(license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
 
     // Check if there's an existing active license for the given identifier and serviceId.
     // If that's the case, we will need to extend the newly activated license's expiry based
