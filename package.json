@@ -1,7 +1,7 @@
 {
   "name": "sls-licensing-service",
   "version": "0.0.10",
-  "description": "",
+  "description": "aisolutions.gr software licensing service",
   "main": "handler.js",
   "dependencies": {
     "aws-sdk": "^2.506.0",
@@ -22,6 +22,6 @@
     "start": "sls offline start --skipCacheInvalidation"
   },
   "keywords": [],
-  "author": "",
+  "author": "Panagis Tselentis",
   "license": "ISC"
 }

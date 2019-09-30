@@ -54,6 +54,13 @@ custom:
 #    - exclude-me-dir/**
 
 functions:
+  info:
+    handler: handlers/app.info
+    events:
+      - http:
+          path: info
+          method: get
+          cors: true
   ### KEYS ###
   createKey:
     handler: handlers/licenses.create
@@ -62,6 +69,7 @@ functions:
           path: licenses
           method: post
           private: true
+          cors: true
   queryKeys:
     handler: handlers/licenses.query
     events:
@@ -69,6 +77,7 @@ functions:
           path: licenses
           method: get
           private: true
+          cors: true
   findOneKey:
     handler: handlers/licenses.findOne
     events:
@@ -76,19 +85,21 @@ functions:
           path: licenses/{id}
           method: get
           private: true
+          cors: true
   activateKey:
     handler: handlers/licenses.activate
     events:
       - http:
           path: licenses/activate/{value}
           method: post
+          cors: true
   validateKey:
     handler: handlers/licenses.validate
     events:
       - http:
           path: licenses/validate/{value}
           method: post
-
+          cors: true
   ### PLANS ###
   createPlan:
     handler: handlers/plans.create
@@ -97,6 +108,7 @@ functions:
           path: plans
           method: post
           private: true
+          cors: true
   bulkInsertPlans:
     handler: handlers/plans.bulkInsert
     events:
@@ -104,6 +116,7 @@ functions:
           path: plans
           method: put
           private: true
+          cors: true
   queryPlans:
     handler: handlers/plans.query
     events:
@@ -111,6 +124,7 @@ functions:
           path: plans
           method: get
           private: true
+          cors: true
   findOnePlan:
     handler: handlers/plans.findOne
     events:
