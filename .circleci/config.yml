@@ -54,8 +54,11 @@ jobs:
 
       - run:
           name: Run tests
-          command: sls invoke test
+          command: |
+            export NODE_ENV=test
+            sudo sls invoke test
 
       - run:
+          export NODE_ENV=production
           name: Deploy application
           command: sls deploy --stage prod
