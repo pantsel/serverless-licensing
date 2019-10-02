@@ -59,7 +59,8 @@ function deleteLicense() {
 describe('createPlan', () => {
 
   after((done) => {
-    dropDB(done);
+    done();
+    // dropDB(done);
   });
 
   it('Should create a plan', () => {
@@ -70,6 +71,8 @@ describe('createPlan', () => {
         "duration": "1 minutes"
       }
     }).then((response) => {
+      console.log("Should create a plan => response.statusCode: " + response.statusCode);
+      console.log("Should create a plan => response.body: " + response.body);
       expect(response).to.not.be.empty;
       expect(response.statusCode).to.be.eql(200);
       expect(response.body).to.not.be.empty;

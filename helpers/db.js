@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-console.log("@@@@@@@@@@@@@@@@@@@@@@@", process.env.NODE_ENV )
 const mongoString = process.env.NODE_ENV === 'test' ? process.env.mongo_url_test : process.env.mongo_url; // MongoDB Url
 mongoose.Promise = Promise;
 let isConnected;
@@ -10,7 +9,7 @@ module.exports = connectToDatabase = () => {
     return Promise.resolve();
   }
 
-  console.log('=> using new database connection');
+  console.log('=> using new database connection', mongoString);
   return mongoose.connect(mongoString,
     {
       useCreateIndex: true,
