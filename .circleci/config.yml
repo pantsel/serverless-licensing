@@ -53,5 +53,9 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
+          name: Run tests
+          command: sls invoke test
+
+      - run:
           name: Deploy application
           command: sls deploy --stage prod
