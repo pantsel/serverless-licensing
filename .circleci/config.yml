@@ -56,7 +56,7 @@ jobs:
           name: Run tests
           command: |
             export NODE_ENV=test
-            export mongo_url_test=mongodb://test:test@127.0.0.1:27017/sls-licensing-test
+            export MONGO_URL_TEST=mongodb://test:test@127.0.0.1:27017/sls-licensing-test
             sudo sls invoke test
 
       - run:

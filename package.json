@@ -19,7 +19,7 @@
     "serverless-offline": "^5.10.1"
   },
   "scripts": {
-    "test": "sls invoke test",
+    "test": "sls invoke test --exit",
     "start": "sls offline start --skipCacheInvalidation"
   },
   "keywords": [],
