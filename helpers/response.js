@@ -35,11 +35,12 @@ module.exports = {
   },
 
   ok: (data) => {
-    return {
+    console.log("Response ok data", {
       statusCode: 200,
       headers: {'Content-Type': 'application/json'},
       body: data ? JSON.stringify(data) : {}
-    }
+    });
+    return {statusCode: 200, headers: {'Content-Type': 'application/json'}, body: data ? JSON.stringify(data) : ""}
   },
 
   badRequest: (data) => {
