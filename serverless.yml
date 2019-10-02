@@ -39,7 +39,7 @@ provider:
   endpointType: regional # Optional endpoint configuration for API Gateway REST API. Default is Edge.
   environment:
     mongo_url: ${env:MONGO_URL, 'mongodb://127.0.0.1:27017/sls-licensing'}
-    mongo_url_test: ${env:MONGO_URL_TEST, 'mongodb://127.0.0.1:27017/sls-licensing-test'}
+    mongo_url_test: ${env:MONGO_URL_TEST, 'mongodb://test:test@127.0.0.1:27017/sls-licensing-test'}
 
 custom:
   serverless-offline:
