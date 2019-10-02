@@ -35,7 +35,11 @@ module.exports = {
   },
 
   ok: (data) => {
-    return {statusCode: 200, body: data ? JSON.stringify(data) : ""}
+    return {
+      statusCode: 200,
+      headers: {'Content-Type': 'application/json'},
+      body: data ? JSON.stringify(data) : {}
+    }
   },
 
   badRequest: (data) => {
