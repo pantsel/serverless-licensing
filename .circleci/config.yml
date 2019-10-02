@@ -56,7 +56,7 @@ jobs:
           name: Run tests
           command: |
             export NODE_ENV=test
-            sudo sls invoke test
+            sls invoke test --exit
 
       - run:
           name: Deploy application
