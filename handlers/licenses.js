@@ -226,14 +226,16 @@ module.exports.validate = async (event, context) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {}
+  } catch (e) {
+    data = event.body || {};
+  }
 
   if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const key = _.get(event, 'pathParameters.value');
 
   try {
     await connectToDatabase();
-    const license = await License.findOne({key: key});
+    const license = await License.findOne({key: key}).populate('plan');
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     if(!license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_NOT_ACTIVE);
     if(license.identifier !== data.identifier) return response.negotiate(LicensingResponses.IDENTIFIER_MISMATCH);

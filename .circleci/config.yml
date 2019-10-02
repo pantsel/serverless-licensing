@@ -19,11 +19,6 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       - image: circleci/mongo:4.1.9
         port: 27017:27017
-#        environment:
-#          - MONGODB_USERNAME: "test"
-#          - MONGODB_PASSWORD: "test"
-#          - MONGO_INITDB_ROOT_USERNAME: "test"
-#          - MONGO_INITDB_ROOT_PASSWORD: "test"
 
     working_directory: ~/repo
 
