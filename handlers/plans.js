@@ -129,10 +129,10 @@ module.exports.findOne = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
-  const identifier = _.get(event, 'pathParameters.id');
+  const id = _.get(event, 'pathParameters.id');
 
   try {
-    const plan = await Plan.findById(identifier);
+    const plan = await Plan.findById(id);
     return response.ok(plan);
   }catch (e) {
     return response.negotiate(e);
