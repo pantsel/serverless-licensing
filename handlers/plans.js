@@ -132,6 +132,7 @@ module.exports.findOne = async (event, context) => {
   const id = _.get(event, 'pathParameters.id');
 
   try {
+    await connectToDatabase();
     const plan = await Plan.findById(id);
     return response.ok(plan);
   }catch (e) {
