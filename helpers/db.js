@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const mongoString = process.env.mongo_url; // MongoDB Url
+console.log("@@@@@@@@@@@@@@@@@@@@@@@", process.env.NODE_ENV )
+const mongoString = process.env.NODE_ENV === 'test' ? process.env.mongo_url_test : process.env.mongo_url; // MongoDB Url
 mongoose.Promise = Promise;
 let isConnected;
 

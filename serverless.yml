@@ -19,6 +19,7 @@ service: sls-licensing
 
 plugins:
   - serverless-offline
+  - serverless-mocha-plugin
 
 provider:
   name: aws
@@ -38,6 +39,7 @@ provider:
   endpointType: regional # Optional endpoint configuration for API Gateway REST API. Default is Edge.
   environment:
     mongo_url: ${env:MONGO_URL, 'mongodb://127.0.0.1:27017/sls-licensing'}
+    mongo_url_test: ${env:MONGO_URL, 'mongodb://127.0.0.1:27017/sls-licensing-test'}
 
 custom:
   serverless-offline:
@@ -84,6 +86,14 @@ functions:
       - http:
           path: licenses/{id}
           method: get
+          private: true
+          cors: true
+  deleteKey:
+    handler: handlers/licenses.delete
+    events:
+      - http:
+          method: delete
+          path: licenses/{id}
           private: true
           cors: true
   activateKey:

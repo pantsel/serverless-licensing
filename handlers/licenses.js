@@ -24,7 +24,7 @@ module.exports.create = async (event, context) => {
   try {
     data = JSON.parse(event.body);
   } catch (e) {
-    return response.negotiate(e);
+    data = event.body;
   }
 
   if (!data || !data.serviceId || data.serviceId === 'undefined') {
@@ -152,7 +152,9 @@ module.exports.activate = async(event, context) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {}
+  } catch (e) {
+    data = event.body;
+  }
 
   if(!data.identifier || !data.serviceId) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const key = _.get(event, 'pathParameters.value');
@@ -239,6 +241,30 @@ module.exports.validate = async (event, context) => {
     return response.ok(license);
   }catch (e) {
     console.log(e);
+    return response.negotiate(e);
+  }
+};
+
+
+/**
+ * Delete a License
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
+module.exports.delete = async (event, context) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  try{
+    await connectToDatabase();
+    const id = _.get(event, 'pathParameters.id');
+    const license = await License.findById(id);
+    if(!license) return response.notFound("License not found");
+    const res = await license.remove();
+    return response.ok(res);
+  }catch (e) {
     return response.negotiate(e);
   }
 };

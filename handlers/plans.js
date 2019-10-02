@@ -20,7 +20,9 @@ module.exports.create = async (event, context) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {}
+  } catch (e) {
+    data = event.body;
+  }
 
   // Create alias
   data.alias = slug(data.name).toLowerCase();
@@ -35,7 +37,7 @@ module.exports.create = async (event, context) => {
 };
 
 /**
- * Create a plan
+ * Delete a plan
  * @param event
  * @param context
  * @param callback

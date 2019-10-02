@@ -17,11 +17,21 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
+      - image: circleci/mongo:4.1.9
+        port: 27017:27017
+        environment:
+          - MONGODB_USERNAME: "test"
+          - MONGODB_PASSWORD: "test"
+          - MONGO_INITDB_ROOT_USERNAME: "test"
+          - MONGO_INITDB_ROOT_PASSWORD: "test"
 
     working_directory: ~/repo
 
     steps:
+      - run:
+          name: Waiting for Mongo
+          command: dockerize -wait tcp://localhost:27017 -timeout 1m
+
       - checkout
 
       # Download and cache dependencies
