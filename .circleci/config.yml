@@ -42,6 +42,7 @@ jobs:
             sudo npm i -g serverless
             npm install
 
+
       - save_cache:
           paths:
             - node_modules
@@ -52,6 +53,7 @@ jobs:
           command: |
             export NODE_ENV=test
             sls invoke test --exit
+
 
       - run:
           name: Deploy application
