@@ -151,7 +151,8 @@ describe('Licensing actions', () => {
   it('Should validate active license', () => {
     return actions.license.validate.run({
       body: {
-        "identifier": deviceId
+        "identifier": deviceId,
+        "serviceId": serviceId
       },
       pathParameters: {
         value: license.key
@@ -190,6 +191,25 @@ describe('Licensing actions', () => {
       expect(response).to.not.be.empty;
       expect(response.statusCode).to.be.eql(400);
       expect(body).to.have.property('id').that.is.eql('IDENTIFIER_MISMATCH');
+      expect(body).to.not.be.empty;
+    });
+  });
+
+  it('Should respond with 400 `SERVICE_ID_MISMATCH` on validation if wrong serviceId is used', () => {
+    return actions.license.validate.run({
+      body: {
+        "identifier": deviceId,
+        "serviceId": "wrongserviceid"
+      },
+      pathParameters: {
+        value: license.key
+      }
+    }).then((response) => {
+      const body = JSON.parse(response.body);
+
+      expect(response).to.not.be.empty;
+      expect(response.statusCode).to.be.eql(400);
+      expect(body).to.have.property('id').that.is.eql('SERVICE_ID_MISMATCH');
       expect(body).to.not.be.empty;
     });
   });
