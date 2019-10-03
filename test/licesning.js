@@ -17,10 +17,7 @@ const actions = {
     delete: mochaPlugin.getWrapper('deleteLicense', '/handlers/licenses.js', 'delete')
   }
 }
-let planId;
-let serviceId = 'testService';
-let deviceId = 'testDevice';
-let license;
+
 
 
 function dropDB(done) {
@@ -35,6 +32,11 @@ function dropDB(done) {
 
 describe('createPlan', () => {
 
+  let planId;
+  let serviceId = 'testService';
+  let deviceId = 'testDevice';
+  let license;
+
   after((done) => {
     // done();
     dropDB(done);
@@ -48,8 +50,6 @@ describe('createPlan', () => {
         "duration": "1 minutes"
       }
     }).then((response) => {
-      console.log("Should create a plan => response.statusCode: " + response.statusCode);
-      console.log("Should create a plan => response.body: " + response.body);
       expect(response).to.not.be.empty;
       expect(response.statusCode).to.be.eql(200);
       expect(response.body).to.not.be.empty;
@@ -76,7 +76,24 @@ describe('createPlan', () => {
     });
   });
 
-  it('Should activate license', () => {
+  it('Should respond with 400 `LICENSE_NOT_ACTIVE` when trying to validate a not yet activated license', () => {
+    return actions.license.validate.run({
+      body: {
+        "identifier": deviceId
+      },
+      pathParameters: {
+        value: license.key
+      }
+    }).then((response) => {
+      const body = JSON.parse(response.body);
+      expect(response).to.not.be.empty;
+      expect(response.statusCode).to.be.eql(400);
+      expect(body).to.have.property('id').that.is.eql('LICENSE_NOT_ACTIVE');
+      expect(body).to.not.be.empty;
+    });
+  });
+
+  it('Should activate license if everything is OK', () => {
     return actions.license.activate.run({
       body: {
         "serviceId": serviceId,
@@ -94,6 +111,24 @@ describe('createPlan', () => {
       expect(body).to.have.property('activatedAt').that.is.a('number');
       expect(body).to.have.property('expiresAt').that.is.a('number');
       license = body;
+    });
+  });
+
+  it('Should respond with 400 `LICENSE_ALREADY_ACTIVE` when trying to double activate a license', () => {
+    return actions.license.activate.run({
+      body: {
+        "serviceId": serviceId,
+        "identifier": deviceId
+      },
+      pathParameters: {
+        value: license.key
+      }
+    }).then((response) => {
+      const body = JSON.parse(response.body);
+      expect(response).to.not.be.empty;
+      expect(response.statusCode).to.be.eql(400);
+      expect(body).to.have.property('id').that.is.eql('LICENSE_ALREADY_ACTIVE');
+      expect(body).to.not.be.empty;
     });
   });
 
@@ -143,7 +178,7 @@ describe('createPlan', () => {
     });
   });
 
-  it('Should respond with 404 if license key is invalid', () => {
+  it('Should respond with 404 `LICENSE_NOT_FOUND` if license key is invalid', () => {
     return actions.license.validate.run({
       body: {
         "identifier": "wrongidentifier"
@@ -153,7 +188,6 @@ describe('createPlan', () => {
       }
     }).then((response) => {
       const body = JSON.parse(response.body);
-
       expect(response).to.not.be.empty;
       expect(response.statusCode).to.be.eql(404);
       expect(body).to.have.property('id').that.is.eql('LICENSE_NOT_FOUND');
