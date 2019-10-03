@@ -157,7 +157,7 @@ describe('Licensing actions', () => {
     });
   });
 
-  it('Should respond with 400 `IDENTIFIER_MISMATCH` if wrong identifier is used', () => {
+  it('Should respond with 400 `IDENTIFIER_MISMATCH` on validation if wrong identifier is used', () => {
     return actions.license.validate.run({
       body: {
         "identifier": "wrongidentifier"
@@ -175,7 +175,7 @@ describe('Licensing actions', () => {
     });
   });
 
-  it('Should respond with 404 `LICENSE_NOT_FOUND` if license key is invalid', () => {
+  it('Should respond with 404 `LICENSE_NOT_FOUND` on validation if license key is invalid', () => {
     return actions.license.validate.run({
       body: {
         "identifier": "wrongidentifier"
@@ -192,7 +192,7 @@ describe('Licensing actions', () => {
     });
   });
 
-  it('Should respond with 400 `MISSING_PARAMETERS` if required params are not provided', () => {
+  it('Should respond with 400 `MISSING_PARAMETERS` on validation if required params are not provided', () => {
     return actions.license.validate.run({
       pathParameters: {
         value: license.key
@@ -206,7 +206,7 @@ describe('Licensing actions', () => {
     });
   });
 
-  it('Should respond with 400 `LICENSE_EXPIRED` if license has expired', async () => {
+  it('Should respond with 400 `LICENSE_EXPIRED` on validation if license has expired', async () => {
 
     await sleep(3000); // Sleep for the plans duration (3s)
 
