@@ -230,7 +230,7 @@ module.exports.validate = async (event, context) => {
     data = event.body || {};
   }
 
-  if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
+  if(!data.identifier || !data.serviceId) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const key = _.get(event, 'pathParameters.value');
 
   try {

@@ -95,7 +95,8 @@ describe('Licensing actions', () => {
   it('Should respond with 400 `LICENSE_NOT_ACTIVE` when trying to validate a not yet activated license', () => {
     return actions.license.validate.run({
       body: {
-        "identifier": deviceId
+        "identifier": deviceId,
+        "serviceId": serviceId
       },
       pathParameters: {
         value: license.key
@@ -180,7 +181,8 @@ describe('Licensing actions', () => {
   it('Should respond with 400 `IDENTIFIER_MISMATCH` on validation if wrong identifier is used', () => {
     return actions.license.validate.run({
       body: {
-        "identifier": "wrongidentifier"
+        "identifier": "wrongidentifier",
+        "serviceId": serviceId
       },
       pathParameters: {
         value: license.key
@@ -217,7 +219,8 @@ describe('Licensing actions', () => {
   it('Should respond with 404 `LICENSE_NOT_FOUND` on validation if license key is invalid', () => {
     return actions.license.validate.run({
       body: {
-        "identifier": "wrongidentifier"
+        "identifier": deviceId,
+        "serviceId": serviceId
       },
       pathParameters: {
         value: 'invalidlicensekey'
@@ -251,7 +254,8 @@ describe('Licensing actions', () => {
 
     const response = await actions.license.validate.run({
       body: {
-        "identifier": deviceId
+        "identifier": deviceId,
+        "serviceId": serviceId
       },
       pathParameters: {
         value: license.key
