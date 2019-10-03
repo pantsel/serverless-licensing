@@ -18,27 +18,24 @@ const actions = {
   }
 }
 
-
-
-function dropDB(done) {
-  console.log('Dropping database');
-  const mongoose = require('mongoose');
-  mongoose.connect(process.env.mongo_url_test,function(){
-    mongoose.connection.db.dropDatabase();
-    console.log('Database dropped');
-    done();
-  });
-}
-
-describe('createPlan', () => {
+describe('Licensing actions', () => {
 
   let planId;
   let serviceId = 'testService';
   let deviceId = 'testDevice';
   let license;
 
+  function dropDB(done) {
+    console.log('Dropping database');
+    const mongoose = require('mongoose');
+    mongoose.connect(process.env.mongo_url_test,function(){
+      mongoose.connection.db.dropDatabase();
+      console.log('Database dropped');
+      done();
+    });
+  }
+
   after((done) => {
-    // done();
     dropDB(done);
   });
 
@@ -47,7 +44,7 @@ describe('createPlan', () => {
       body: {
         "name": "debug",
         "description": "Debug license",
-        "duration": "1 minutes"
+        "duration": "3 seconds"
       }
     }).then((response) => {
       expect(response).to.not.be.empty;
@@ -211,34 +208,7 @@ describe('createPlan', () => {
 
   it('Should respond with 400 `LICENSE_EXPIRED` if license has expired', async () => {
 
-    const oneSecondPlanResponse = await actions.plan.create.run({
-      body: {
-        "name": "second",
-        "description": "One second license",
-        "duration": "1 seconds"
-      }
-    });
-    const plan = JSON.parse(oneSecondPlanResponse.body);
-
-    const licenseResponse = await actions.license.create.run({
-      body: {
-        "serviceId": serviceId,
-        "plan": plan._id
-      }
-    })
-    const oneSecondLicense = JSON.parse(licenseResponse.body);
-
-    await actions.license.activate.run({
-      body: {
-        "serviceId": serviceId,
-        "identifier": deviceId
-      },
-      pathParameters: {
-        value: oneSecondLicense.key
-      }
-    })
-
-    await sleep(3000);
+    await sleep(3000); // Sleep for the plans duration (3s)
 
     const response = await actions.license.validate.run({
       body: {
