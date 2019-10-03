@@ -47,7 +47,7 @@ module.exports.create = async (event, context) => {
       key = LicenseKey().generate(data.serviceId);
     }while (await License.count({key: key}) > 0);
 
-    const license = await License.create(_.merge(data, {plan: plan}, {key: key}));
+    const license = await License.create(_.merge(data, {plan: plan, key: key}));
     return response.ok(license);
   }catch (e) {
     return response.negotiate(e)
