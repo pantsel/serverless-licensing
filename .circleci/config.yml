@@ -6,8 +6,6 @@ version: 2
 jobs:
   build:
     filters:
-#      branches:
-#        only: master
       tags:
         only: /.*/
     docker:
