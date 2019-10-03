@@ -103,6 +103,7 @@ functions:
           path: licenses/activate/{value}
           method: post
           cors: true
+          private: true
   validateKey:
     handler: handlers/licenses.validate
     events:
@@ -110,6 +111,7 @@ functions:
           path: licenses/validate/{value}
           method: post
           cors: true
+          private: true
   ### PLANS ###
   createPlan:
     handler: handlers/plans.create
