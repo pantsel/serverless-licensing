@@ -18,22 +18,30 @@ const actions = {
   }
 }
 
+function dropDB(done) {
+  console.log('Dropping database');
+  const mongoose = require('mongoose');
+  mongoose.connect(process.env.mongo_url_test,function(){
+    mongoose.connection.db.dropDatabase();
+    console.log('Database dropped');
+    done();
+  });
+}
+
+function validateErrorResponse(response, id, statusCode) {
+  const body = JSON.parse(response.body);
+  expect(response).to.not.be.empty;
+  expect(response.statusCode).to.be.eql(statusCode || 400);
+  expect(body).to.have.property('id').that.is.eql(id);
+  expect(body).to.not.be.empty;
+}
+
 describe('Licensing actions', () => {
 
   let planId;
   let serviceId = 'testService';
   let deviceId = 'testDevice';
   let license;
-
-  function dropDB(done) {
-    console.log('Dropping database');
-    const mongoose = require('mongoose');
-    mongoose.connect(process.env.mongo_url_test,function(){
-      mongoose.connection.db.dropDatabase();
-      console.log('Database dropped');
-      done();
-    });
-  }
 
   after((done) => {
     dropDB(done);
@@ -84,11 +92,7 @@ describe('Licensing actions', () => {
         value: license.key
       }
     }).then((response) => {
-      const body = JSON.parse(response.body);
-      expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.eql(400);
-      expect(body).to.have.property('id').that.is.eql('SERVICE_ID_MISMATCH');
-      expect(body).to.not.be.empty;
+      validateErrorResponse(response, 'SERVICE_ID_MISMATCH')
     });
   });
 
@@ -102,11 +106,7 @@ describe('Licensing actions', () => {
         value: license.key
       }
     }).then((response) => {
-      const body = JSON.parse(response.body);
-      expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.eql(400);
-      expect(body).to.have.property('id').that.is.eql('LICENSE_NOT_ACTIVE');
-      expect(body).to.not.be.empty;
+      validateErrorResponse(response, 'LICENSE_NOT_ACTIVE')
     });
   });
 
@@ -141,11 +141,7 @@ describe('Licensing actions', () => {
         value: license.key
       }
     }).then((response) => {
-      const body = JSON.parse(response.body);
-      expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.eql(400);
-      expect(body).to.have.property('id').that.is.eql('LICENSE_ALREADY_ACTIVE');
-      expect(body).to.not.be.empty;
+      validateErrorResponse(response, 'LICENSE_ALREADY_ACTIVE')
     });
   });
 
@@ -188,12 +184,7 @@ describe('Licensing actions', () => {
         value: license.key
       }
     }).then((response) => {
-      const body = JSON.parse(response.body);
-
-      expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.eql(400);
-      expect(body).to.have.property('id').that.is.eql('IDENTIFIER_MISMATCH');
-      expect(body).to.not.be.empty;
+      validateErrorResponse(response, 'IDENTIFIER_MISMATCH')
     });
   });
 
@@ -207,12 +198,7 @@ describe('Licensing actions', () => {
         value: license.key
       }
     }).then((response) => {
-      const body = JSON.parse(response.body);
-
-      expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.eql(400);
-      expect(body).to.have.property('id').that.is.eql('SERVICE_ID_MISMATCH');
-      expect(body).to.not.be.empty;
+      validateErrorResponse(response, 'SERVICE_ID_MISMATCH')
     });
   });
 
@@ -226,11 +212,7 @@ describe('Licensing actions', () => {
         value: 'invalidlicensekey'
       }
     }).then((response) => {
-      const body = JSON.parse(response.body);
-      expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.eql(404);
-      expect(body).to.have.property('id').that.is.eql('LICENSE_NOT_FOUND');
-      expect(body).to.not.be.empty;
+      validateErrorResponse(response, 'LICENSE_NOT_FOUND', 404);
     });
   });
 
@@ -240,11 +222,7 @@ describe('Licensing actions', () => {
         value: license.key
       }
     }).then((response) => {
-      const body = JSON.parse(response.body);
-      expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.eql(400);
-      expect(body).to.have.property('id').that.is.eql('MISSING_PARAMETERS');
-      expect(body).to.not.be.empty;
+      validateErrorResponse(response, 'MISSING_PARAMETERS');
     });
   });
 
@@ -262,11 +240,7 @@ describe('Licensing actions', () => {
       }
     })
 
-    const body = JSON.parse(response.body);
-    expect(response).to.not.be.empty;
-    expect(response.statusCode).to.be.eql(400);
-    expect(body).to.have.property('id').that.is.eql('LICENSE_EXPIRED');
-    expect(body).to.not.be.empty;
+    validateErrorResponse(response, 'LICENSE_EXPIRED');
 
   });
 });
