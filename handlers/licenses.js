@@ -139,6 +139,65 @@ module.exports.findOne = async (event, context) => {
 
 
 /**
+ * Update a specific License using its _id or key
+ * @param event
+ * @param context
+ * @returns {Promise<T>}
+ */
+module.exports.update = async (event, context) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  try{
+    await connectToDatabase();
+    const identifier = _.get(event, 'pathParameters.id');
+    let criteria = {};
+    if(mongoose.Types.ObjectId.isValid(identifier)) {
+      criteria._id = identifier
+    }else{
+      criteria.key = identifier;
+    }
+
+    let data = {}
+
+    try {
+      data = JSON.parse(event.body);
+    } catch (e) {
+      data = event.body || {};
+    }
+
+    const license =  await License.findOne(criteria).populate('plan');
+    if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+
+    const nonUpdatableProperties = [
+      '_id',
+      '__v',
+      'plan',
+      'key',
+      'serviceId',
+      'activatedAt',
+      'expiresAt',
+      'createdAt',
+      'updatedAt'
+    ];
+    const updatableProperties = Object.keys(_.omit(License.schema.paths, nonUpdatableProperties));
+    const incomingProperties = Object.keys(data);
+
+    incomingProperties.forEach(key => {
+      if(updatableProperties.indexOf(key) > -1) {
+        license[key] = data[key];
+      }
+    })
+
+    await license.save();
+    return response.ok(license);
+  }catch (e) {
+    return response.negotiate(e);
+  }
+};
+
+
+/**
  * Activate a specific License
  * @param event
  * @param context

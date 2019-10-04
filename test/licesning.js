@@ -12,6 +12,7 @@ const actions = {
   },
   license: {
     create: mochaPlugin.getWrapper('createKey', '/handlers/licenses.js', 'create'),
+    update: mochaPlugin.getWrapper('updateKey', '/handlers/licenses.js', 'update'),
     activate: mochaPlugin.getWrapper('activateKey', '/handlers/licenses.js', 'activate'),
     validate: mochaPlugin.getWrapper('validateKey', '/handlers/licenses.js', 'validate'),
     delete: mochaPlugin.getWrapper('deleteLicense', '/handlers/licenses.js', 'delete')
@@ -241,6 +242,36 @@ describe('Licensing actions', () => {
     })
 
     validateErrorResponse(response, 'LICENSE_EXPIRED');
+
+  });
+
+  it('Should update existing license', async () => {
+
+    const updates = {
+      identifier: 'identifier',
+      comments: 'This is just a comment',
+      extra: {
+        season: false,
+        blocked: true
+      },
+      customerId: 'customerId'
+    }
+
+    const response = await actions.license.update.run({
+      body: propertiesToUpdate,
+      pathParameters: {
+        id: license.key
+      }
+    })
+
+    const body = JSON.parse(response.body);
+    expect(response).to.not.be.empty;
+    expect(response.statusCode).to.be.eql(200);
+    expect(body).to.not.be.empty;
+    expect(body).to.have.property('identifier').that.is.eql(updates.identifier);
+    expect(body).to.have.property('comments').that.is.eql(updates.comments);
+    expect(body).to.have.property('extra').that.is.eql(updates.extra);
+    expect(body).to.have.property('customerId').that.is.eql(updates.customerId);
 
   });
 });
