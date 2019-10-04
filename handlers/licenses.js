@@ -328,9 +328,9 @@ module.exports.expire = async (event, context) => {
     if(license.expiresAt < new Date().getTime()) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
 
     license.expiresAt = new Date().getTime();
-    await license.save();
+    const updated = await license.save();
 
-    return response.ok(license);
+    return response.ok(updated);
   }catch (e) {
     console.log(e);
     return response.negotiate(e);
