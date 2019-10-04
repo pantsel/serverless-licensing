@@ -39,8 +39,8 @@ function validateErrorResponse(response, id, statusCode) {
 describe('Licensing actions', () => {
 
   let planId;
-  let serviceId = 'testService';
-  let deviceId = 'testDevice';
+  const serviceId = 'testService';
+  const deviceId = 'testDevice';
   let license;
 
   after((done) => {
