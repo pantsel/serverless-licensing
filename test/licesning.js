@@ -42,6 +42,7 @@ describe('Licensing actions', () => {
   const serviceId = 'testService';
   const deviceId = 'testDevice';
   let license;
+  const requiredParamsForValidation = ['identifier', 'serviceId']
 
   after((done) => {
     dropDB(done);
@@ -216,31 +217,20 @@ describe('Licensing actions', () => {
     });
   });
 
-  it('Should respond with 400 `MISSING_PARAMETERS` on validation if `identifier` is not provided', () => {
-    return actions.license.validate.run({
-      body: {
-        "serviceId": serviceId
-      },
-      pathParameters: {
-        value: license.key
-      }
-    }).then((response) => {
-      validateErrorResponse(response, 'MISSING_PARAMETERS');
+  requiredParamsForValidation.forEach(param => {
+    it('Should respond with 400 `MISSING_PARAMETERS` on validation if ' + param + ' is not provided', () => {
+      const bodyObj = {};
+      bodyObj['param'] = param === 'identifier' ? deviceId : serviceId;
+      return actions.license.validate.run({
+        body: bodyObj,
+        pathParameters: {
+          value: license.key
+        }
+      }).then((response) => {
+        validateErrorResponse(response, 'MISSING_PARAMETERS');
+      });
     });
-  });
-
-  it('Should respond with 400 `MISSING_PARAMETERS` on validation if `serviceId` is not provided', () => {
-    return actions.license.validate.run({
-      body: {
-        identifier: deviceId
-      },
-      pathParameters: {
-        value: license.key
-      }
-    }).then((response) => {
-      validateErrorResponse(response, 'MISSING_PARAMETERS');
-    });
-  });
+  })
 
   it('Should respond with 400 `LICENSE_EXPIRED` on validation if license has expired', async () => {
 
