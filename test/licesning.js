@@ -15,6 +15,7 @@ const actions = {
     update: mochaPlugin.getWrapper('updateKey', '/handlers/licenses.js', 'update'),
     activate: mochaPlugin.getWrapper('activateKey', '/handlers/licenses.js', 'activate'),
     validate: mochaPlugin.getWrapper('validateKey', '/handlers/licenses.js', 'validate'),
+    expire: mochaPlugin.getWrapper('expireKey', '/handlers/licenses.js', 'expire'),
     delete: mochaPlugin.getWrapper('deleteLicense', '/handlers/licenses.js', 'delete')
   }
 }
@@ -277,4 +278,68 @@ describe('Licensing actions', () => {
 
     });
   });
+
+  describe('Expire license', () => {
+
+    before(async () => {
+      const response = await actions.license.create.run({
+        body: {
+          "serviceId": serviceId,
+          "plan": planId
+        }
+      });
+
+      const body = JSON.parse(response.body);
+      license = body;
+
+    });
+
+    it('Should respond with 400 `LICENSE_NOT_ACTIVE` when trying to expire a not yet activated license', async () => {
+      const response = await actions.license.expire.run({
+        pathParameters: {
+          id: license._id
+        }
+      })
+
+      validateErrorResponse(response, 'LICENSE_NOT_ACTIVE')
+
+      // Activate license for the upcoming test cases
+      await actions.license.activate.run({
+        body: {
+          "identifier": deviceId,
+          "serviceId": serviceId
+        },
+        pathParameters: {
+          value: license.key
+        }
+      });
+    });
+
+    it('Should expire an active license', async () => {
+
+      const response = await actions.license.expire.run({
+        pathParameters: {
+          id: license._id
+        }
+      })
+
+      const body = JSON.parse(response.body);
+      expect(response).to.not.be.empty;
+      expect(response.statusCode).to.be.eql(200);
+      expect(body).to.not.be.empty;
+      expect(body).to.have.property('_id');
+      expect(body).to.have.property('status').that.is.eql('expired');
+
+    });
+
+    it('Should respond with 400 `LICENSE_EXPIRED` when trying to expire an already license', async () => {
+      const response = await actions.license.expire.run({
+        pathParameters: {
+          id: license._id
+        }
+      });
+      validateErrorResponse(response, 'LICENSE_EXPIRED');
+    });
+
+  })
 });

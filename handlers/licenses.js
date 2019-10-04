@@ -309,6 +309,36 @@ module.exports.validate = async (event, context) => {
 
 
 /**
+ * Validate a specific License
+ * @param event
+ * @param context
+ * @returns {Promise<T>}
+ */
+module.exports.expire = async (event, context) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const id = _.get(event, 'pathParameters.id');
+
+  try {
+    await connectToDatabase();
+    const license = await License.findById(id);
+    if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+    if(!license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_NOT_ACTIVE);
+    if(license.expiresAt < new Date().getTime()) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
+
+    license.expiresAt = new Date().getTime();
+    await license.save();
+
+    return response.ok(license);
+  }catch (e) {
+    console.log(e);
+    return response.negotiate(e);
+  }
+};
+
+
+/**
  * Delete a License
  * @param event
  * @param context
