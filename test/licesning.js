@@ -216,8 +216,24 @@ describe('Licensing actions', () => {
     });
   });
 
-  it('Should respond with 400 `MISSING_PARAMETERS` on validation if required params are not provided', () => {
+  it('Should respond with 400 `MISSING_PARAMETERS` on validation if `identifier` is not provided', () => {
     return actions.license.validate.run({
+      body: {
+        "serviceId": serviceId
+      },
+      pathParameters: {
+        value: license.key
+      }
+    }).then((response) => {
+      validateErrorResponse(response, 'MISSING_PARAMETERS');
+    });
+  });
+
+  it('Should respond with 400 `MISSING_PARAMETERS` on validation if `serviceId` is not provided', () => {
+    return actions.license.validate.run({
+      body: {
+        identifier: deviceId
+      },
       pathParameters: {
         value: license.key
       }
