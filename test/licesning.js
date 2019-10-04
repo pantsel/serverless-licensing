@@ -245,33 +245,36 @@ describe('Licensing actions', () => {
 
   });
 
-  it('Should update existing license', async () => {
+  const identifyingProperties = ['_id', 'key'];
+  identifyingProperties.forEach(identifyingProperty => {
+    it('Should update existing license provided the `' + identifyingProperty + '`', async () => {
 
-    const updates = {
-      identifier: 'identifier',
-      comments: 'This is just a comment',
-      extra: {
-        season: false,
-        blocked: true
-      },
-      customerId: 'customerId'
-    }
-
-    const response = await actions.license.update.run({
-      body: updates,
-      pathParameters: {
-        id: license.key
+      const updates = {
+        identifier: 'identifier',
+        comments: 'This is just a comment',
+        extra: {
+          season: false,
+          blocked: true
+        },
+        customerId: 'customerId'
       }
-    })
 
-    const body = JSON.parse(response.body);
-    expect(response).to.not.be.empty;
-    expect(response.statusCode).to.be.eql(200);
-    expect(body).to.not.be.empty;
-    expect(body).to.have.property('identifier').that.is.eql(updates.identifier);
-    expect(body).to.have.property('comments').that.is.eql(updates.comments);
-    expect(body).to.have.property('extra').that.is.eql(updates.extra);
-    expect(body).to.have.property('customerId').that.is.eql(updates.customerId);
+      const response = await actions.license.update.run({
+        body: updates,
+        pathParameters: {
+          id: license[identifyingProperty]
+        }
+      });
 
+      const body = JSON.parse(response.body);
+      expect(response).to.not.be.empty;
+      expect(response.statusCode).to.be.eql(200);
+      expect(body).to.not.be.empty;
+      expect(body).to.have.property('identifier').that.is.eql(updates.identifier);
+      expect(body).to.have.property('comments').that.is.eql(updates.comments);
+      expect(body).to.have.property('extra').that.is.eql(updates.extra);
+      expect(body).to.have.property('customerId').that.is.eql(updates.customerId);
+
+    });
   });
 });
