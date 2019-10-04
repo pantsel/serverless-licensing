@@ -258,7 +258,7 @@ describe('Licensing actions', () => {
     }
 
     const response = await actions.license.update.run({
-      body: propertiesToUpdate,
+      body: updates,
       pathParameters: {
         id: license.key
       }
