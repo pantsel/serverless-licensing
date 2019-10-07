@@ -338,7 +338,7 @@ describe('Licensing actions', () => {
 
     });
 
-    it('Should respond with 400 `LICENSE_EXPIRED` when trying to expire an already license', async () => {
+    it('Should respond with 400 `LICENSE_EXPIRED` when trying to expire an already expired license', async () => {
       const response = await actions.license.expire.run({
         pathParameters: {
           id: license._id
