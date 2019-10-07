@@ -88,6 +88,22 @@ functions:
           method: get
           private: true
           cors: true
+  updateKey:
+    handler: handlers/licenses.update
+    events:
+      - http:
+          method: patch
+          path: licenses/{id}
+          private: true
+          cors: true
+  expireKey:
+    handler: handlers/licenses.expire
+    events:
+      - http:
+          method: patch
+          path: licenses/{id}/expire
+          private: true
+          cors: true
   deleteKey:
     handler: handlers/licenses.delete
     events:
