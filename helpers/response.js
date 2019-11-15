@@ -5,7 +5,7 @@ const _ = require('lodash');
 const defaultHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Credentials': true,
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json;charset=UTF-8'
 }
 
 module.exports = {
