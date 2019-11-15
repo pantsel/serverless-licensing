@@ -2,7 +2,15 @@ const Errors = require('./errors');
 
 const _ = require('lodash');
 
+const defaultHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Credentials': true,
+  'Content-Type': 'application/json'
+}
+
 module.exports = {
+
+
   negotiate: (err) => {
 
     let statusCode = err.statusCode || 500;
@@ -29,19 +37,19 @@ module.exports = {
 
     return {
       statusCode: statusCode,
-      headers: {'Content-Type': 'application/json'},
+      headers: defaultHeaders,
       body: JSON.stringify(err),
     }
   },
 
   ok: (data) => {
-    return {statusCode: 200, headers: {'Content-Type': 'application/json'}, body: data ? JSON.stringify(data) : ""}
+    return {statusCode: 200, headers: defaultHeaders, body: data ? JSON.stringify(data) : ""}
   },
 
   badRequest: (data) => {
     return {
       statusCode: 400,
-      headers: {'Content-Type': 'application/json'},
+      headers: defaultHeaders,
       body: _.isObject(data) ? JSON.stringify(data) : JSON.stringify({
         message: data || 'Bad request'
       }),
@@ -51,7 +59,7 @@ module.exports = {
   notFound: (data) => {
     return {
       statusCode: 404,
-      headers: {'Content-Type': 'application/json'},
+      headers: defaultHeaders,
       body: _.isObject(data) ? JSON.stringify(data) : JSON.stringify({
         message: data || 'Not found'
       }),
@@ -61,7 +69,7 @@ module.exports = {
   unauthorized: (data) => {
     return {
       statusCode: 401,
-      headers: {'Content-Type': 'application/json'},
+      headers: defaultHeaders,
       body:_.isObject(data) ? JSON.stringify(data) : JSON.stringify({
         message: data || 'Unauthorized'
       }),
@@ -71,7 +79,7 @@ module.exports = {
   forbidden: (data) => {
     return {
       statusCode: 403,
-      headers: {'Content-Type': 'application/json'},
+      headers: defaultHeaders,
       body: _.isObject(data) ? JSON.stringify(data) : JSON.stringify({
         message: data || 'Forbidden'
       }),
