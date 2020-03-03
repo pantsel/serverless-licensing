@@ -1,7 +1,7 @@
 {
   "name": "sls-licensing-service",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.3.4",
+  "description": "aisolutions.gr software licensing service",
   "main": "handler.js",
   "dependencies": {
     "aws-sdk": "^2.506.0",
@@ -15,13 +15,14 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "serverless-mocha-plugin": "^1.11.0",
     "serverless-offline": "^5.10.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "sls invoke test --exit",
     "start": "sls offline start --skipCacheInvalidation"
   },
   "keywords": [],
-  "author": "",
+  "author": "Panagis Tselentis",
   "license": "ISC"
 }

@@ -24,7 +24,7 @@ module.exports.create = async (event, context) => {
   try {
     data = JSON.parse(event.body);
   } catch (e) {
-    return response.negotiate(e);
+    data = event.body;
   }
 
   if (!data || !data.serviceId || data.serviceId === 'undefined') {
@@ -47,7 +47,7 @@ module.exports.create = async (event, context) => {
       key = LicenseKey().generate(data.serviceId);
     }while (await License.count({key: key}) > 0);
 
-    const license = await License.create(_.merge(data, {plan: plan}, {key: key}));
+    const license = await License.create(_.merge(data, {plan: plan, key: key}));
     return response.ok(license);
   }catch (e) {
     return response.negotiate(e)
@@ -129,8 +129,67 @@ module.exports.findOne = async (event, context) => {
     }else{
       criteria.key = identifier;
     }
-    const license =  await License.findOne(criteria);
+    const license =  await License.findOne(criteria).populate('plan');
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+    return response.ok(license);
+  }catch (e) {
+    return response.negotiate(e);
+  }
+};
+
+
+/**
+ * Update a specific License using its _id or key
+ * @param event
+ * @param context
+ * @returns {Promise<T>}
+ */
+module.exports.update = async (event, context) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  try{
+    await connectToDatabase();
+    const identifier = _.get(event, 'pathParameters.id');
+    let criteria = {};
+    if(mongoose.Types.ObjectId.isValid(identifier)) {
+      criteria._id = identifier
+    }else{
+      criteria.key = identifier;
+    }
+
+    let data = {}
+
+    try {
+      data = JSON.parse(event.body);
+    } catch (e) {
+      data = event.body || {};
+    }
+
+    const license =  await License.findOne(criteria).populate('plan');
+    if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+
+    const nonUpdatableProperties = [
+      '_id',
+      '__v',
+      'plan',
+      'key',
+      'serviceId',
+      'activatedAt',
+      'expiresAt',
+      'createdAt',
+      'updatedAt'
+    ];
+    const updatableProperties = Object.keys(_.omit(License.schema.paths, nonUpdatableProperties));
+    const incomingProperties = Object.keys(data);
+
+    incomingProperties.forEach(key => {
+      if(updatableProperties.indexOf(key) > -1) {
+        license[key] = data[key];
+      }
+    })
+
+    await license.save();
     return response.ok(license);
   }catch (e) {
     return response.negotiate(e);
@@ -152,7 +211,9 @@ module.exports.activate = async(event, context) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {}
+  } catch (e) {
+    data = event.body;
+  }
 
   if(!data.identifier || !data.serviceId) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const key = _.get(event, 'pathParameters.value');
@@ -165,7 +226,7 @@ module.exports.activate = async(event, context) => {
     if(!license.plan) return response.negotiate(LicensingResponses.NO_PLAN_TO_LICENSE);
     if(license.serviceId !== data.serviceId) return response.negotiate(LicensingResponses.SERVICE_ID_MISMATCH);
     if(license.expiresAt && license.expiresAt < now) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
-    if(license.activatedAt || license.identifier) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
+    if(license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_ALREADY_ACTIVE);
 
     // Check if there's an existing active license for the given identifier and serviceId.
     // If that's the case, we will need to extend the newly activated license's expiry based
@@ -179,13 +240,14 @@ module.exports.activate = async(event, context) => {
     })
 
     let licenseStartTime = existingActiveKeyForIdentifier ? existingActiveKeyForIdentifier.expiresAt : now;
-
     license.identifier = data.identifier;
+    license.customerId = data.customerId || license.customerId;
+    license.comments = data.comments || license.comments;
     license.activatedAt = now;
 
     // Create expiresAt based on the plan
     let planDurationParts = license.plan.duration.split(" "); // ex. `15 years` will be [0] = 15, [1] => `years`
-    let expiresAt = moment(licenseStartTime).add(planDurationParts[0],planDurationParts[1]);
+    let expiresAt = moment(licenseStartTime).add(planDurationParts[0], planDurationParts[1]);
     license.expiresAt = expiresAt;
 
     // Finally, add extra info if provided
@@ -223,21 +285,78 @@ module.exports.validate = async (event, context) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {}
+  } catch (e) {
+    data = event.body || {};
+  }
 
-  if(!data.identifier) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
+  if(!data.identifier || !data.serviceId) return response.negotiate(LicensingResponses.MISSING_PARAMETERS);
   const key = _.get(event, 'pathParameters.value');
 
   try {
     await connectToDatabase();
-    const license = await License.findOne({key: key});
+    const license = await License.findOne({key: key}).populate('plan');
     if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
     if(!license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_NOT_ACTIVE);
     if(license.identifier !== data.identifier) return response.negotiate(LicensingResponses.IDENTIFIER_MISMATCH);
+    if(license.serviceId !== data.serviceId) return response.negotiate(LicensingResponses.SERVICE_ID_MISMATCH);
     if(license.expiresAt < new Date().getTime()) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
     return response.ok(license);
   }catch (e) {
     console.log(e);
+    return response.negotiate(e);
+  }
+};
+
+
+/**
+ * Validate a specific License
+ * @param event
+ * @param context
+ * @returns {Promise<T>}
+ */
+module.exports.expire = async (event, context) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const id = _.get(event, 'pathParameters.id');
+
+  try {
+    await connectToDatabase();
+    const license = await License.findById(id);
+    if(!license) return response.negotiate(LicensingResponses.LICENSE_NOT_FOUND);
+    if(!license.activatedAt) return response.negotiate(LicensingResponses.LICENSE_NOT_ACTIVE);
+    if(license.expiresAt < new Date().getTime()) return response.negotiate(LicensingResponses.LICENSE_EXPIRED);
+
+    license.expiresAt = new Date().getTime();
+    const updated = await license.save();
+
+    return response.ok(updated);
+  }catch (e) {
+    console.log(e);
+    return response.negotiate(e);
+  }
+};
+
+
+/**
+ * Delete a License
+ * @param event
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
+module.exports.delete = async (event, context) => {
+
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  try{
+    await connectToDatabase();
+    const id = _.get(event, 'pathParameters.id');
+    const license = await License.findById(id);
+    if(!license) return response.notFound("License not found");
+    const res = await license.remove();
+    return response.ok(res);
+  }catch (e) {
     return response.negotiate(e);
   }
 };

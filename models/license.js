@@ -21,6 +21,15 @@ const schema = new mongoose.Schema({
     type: String
   },
 
+  customerId: {
+    type: String,
+    index: true    
+  },
+
+  comments: {
+    type: String
+  },
+  
   plan: {
     required: true,
     type: mongoose.Schema.Types.ObjectId, ref: 'Plan'

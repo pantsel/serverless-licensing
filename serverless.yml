@@ -19,10 +19,11 @@ service: sls-licensing
 
 plugins:
   - serverless-offline
+  - serverless-mocha-plugin
 
 provider:
   name: aws
-  runtime: nodejs10.16
+  runtime: nodejs10.x
   apiKeys:
     - sls-licensing-${opt:stage, 'dev'}
   memorySize: 128 # Overwrite the default memory size. Default is 1024
@@ -37,12 +38,13 @@ provider:
   apiName: sls-licensing-${opt:stage, 'dev'} # Use a custom name for the API Gateway API
   endpointType: regional # Optional endpoint configuration for API Gateway REST API. Default is Edge.
   environment:
-    mongo_url:${env:MONGO_URL, 'mongodb://127.0.0.1:27017/sls-licensing'}
+    mongo_url: ${env:MONGO_URL, 'mongodb://127.0.0.1:27017/sls-licensing'}
+    mongo_url_test: ${env:MONGO_URL_TEST, 'mongodb://127.0.0.1:27017/sls-licensing-test'}
 
 custom:
   serverless-offline:
-    host:  ${env:HOST, 'localhost'}
-    port:  ${env:PORT, 3000}
+    host:  ${env:HOST, '0.0.0.0'}
+    port:  ${env:PORT, '3000'}
 
 # you can add packaging information here
 #package:
@@ -54,6 +56,13 @@ custom:
 #    - exclude-me-dir/**
 
 functions:
+  info:
+    handler: handlers/app.info
+    events:
+      - http:
+          path: info
+          method: get
+          cors: true
   ### KEYS ###
   createKey:
     handler: handlers/licenses.create
@@ -62,6 +71,7 @@ functions:
           path: licenses
           method: post
           private: true
+          cors: true
   queryKeys:
     handler: handlers/licenses.query
     events:
@@ -69,62 +79,96 @@ functions:
           path: licenses
           method: get
           private: true
+          cors: true
   findOneKey:
-      handler: handlers/licenses.findOne
-      events:
-        - http:
-            path: licenses/{id}
-            method: get
-            private: true
+    handler: handlers/licenses.findOne
+    events:
+      - http:
+          path: licenses/{id}
+          method: get
+          private: true
+          cors: true
+  updateKey:
+    handler: handlers/licenses.update
+    events:
+      - http:
+          method: patch
+          path: licenses/{id}
+          private: true
+          cors: true
+  expireKey:
+    handler: handlers/licenses.expire
+    events:
+      - http:
+          method: patch
+          path: licenses/{id}/expire
+          private: true
+          cors: true
+  deleteKey:
+    handler: handlers/licenses.delete
+    events:
+      - http:
+          method: delete
+          path: licenses/{id}
+          private: true
+          cors: true
   activateKey:
-      handler: handlers/licenses.activate
-      events:
-        - http:
-            path: licenses/{value}/activate
-            method: post
+    handler: handlers/licenses.activate
+    events:
+      - http:
+          path: licenses/activate/{value}
+          method: post
+          cors: true
+          private: true
   validateKey:
-      handler: handlers/licenses.validate
-      events:
-        - http:
-            path: licenses/{value}/validate
-            method: post
-
+    handler: handlers/licenses.validate
+    events:
+      - http:
+          path: licenses/validate/{value}
+          method: post
+          cors: true
+          private: true
   ### PLANS ###
   createPlan:
-      handler: handlers/plans.create
-      events:
-        - http:
-            path: plans
-            method: post
-            private: true
+    handler: handlers/plans.create
+    events:
+      - http:
+          path: plans
+          method: post
+          private: true
+          cors: true
   bulkInsertPlans:
-      handler: handlers/plans.bulkInsert
-      events:
-        - http:
-            path: plans
-            method: put
-            private: true
+    handler: handlers/plans.bulkInsert
+    events:
+      - http:
+          path: plans
+          method: put
+          private: true
+          cors: true
   queryPlans:
-      handler: handlers/plans.query
-      events:
-        - http:
-            path: plans
-            method: get
-            private: true
+    handler: handlers/plans.query
+    events:
+      - http:
+          path: plans
+          method: get
+          private: true
+          cors: true
   findOnePlan:
-      handler: handlers/plans.findOne
-      events:
-        - http:
-            path: plans/{id}
-            method: get
-            private: true
+    handler: handlers/plans.findOne
+    events:
+      - http:
+          method: get
+          path: plans/{id}
+          private: true
+          cors: true
   deletePlan:
     handler: handlers/plans.delete
     events:
       - http:
-          path: plans/{id}
           method: delete
+          path: plans/{id}
           private: true
+          cors: true
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

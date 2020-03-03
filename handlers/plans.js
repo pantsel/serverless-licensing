@@ -12,7 +12,7 @@ const slug = require('slug');
  * @param callback
  * @returns {*}
  */
-module.exports.create = (event, context, callback) => {
+module.exports.create = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -20,19 +20,24 @@ module.exports.create = (event, context, callback) => {
 
   try {
     data = JSON.parse(event.body);
-  } catch (e) {}
+  } catch (e) {
+    data = event.body;
+  }
 
   // Create alias
   data.alias = slug(data.name).toLowerCase();
 
-  return connectToDatabase()
-    .then(() => Plan.create(data))
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try {
+    await connectToDatabase();
+    const plan = await Plan.create(data);
+    return response.ok(plan);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 /**
- * Create a plan
+ * Delete a plan
  * @param event
  * @param context
  * @param callback
@@ -58,10 +63,9 @@ module.exports.delete = async (event, context) => {
  * Bulk insert plans
  * @param event
  * @param context
- * @param callback
  * @returns {*}
  */
-module.exports.bulkInsert = (event, context, callback) => {
+module.exports.bulkInsert = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -83,20 +87,22 @@ module.exports.bulkInsert = (event, context, callback) => {
     item.updatedAt = now;
   })
 
-  return connectToDatabase()
-    .then(() => Plan.insertMany(data))
-    .then(docs => callback(null, response.ok(docs)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try {
+    await connectToDatabase();
+    const docs = await Plan.insertMany(data);
+    return response.ok(docs);
+  } catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 /**
  * Query plans
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
-module.exports.query = (event, context, callback) => {
+module.exports.query = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -106,27 +112,32 @@ module.exports.query = (event, context, callback) => {
     sort: _.get(event, 'queryStringParameters.sort') ? event.queryStringParameters.sort : {createdAt: -1}
   }
 
-  return connectToDatabase()
-    .then(() => Plan.paginate({}, options))
-    .then(docs => callback(null, response.ok(docs)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try{
+    await connectToDatabase();
+    const plans = await Plan.paginate({}, options);
+    return response.ok(plans);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
 
 /**
  * Find a specific plan
  * @param event
  * @param context
- * @param callback
  * @returns {Promise<T>}
  */
-module.exports.findOne = (event, context, callback) => {
+module.exports.findOne = async (event, context) => {
 
   context.callbackWaitsForEmptyEventLoop = false;
 
-  const identifier = _.get(event, 'pathParameters.id');
+  const id = _.get(event, 'pathParameters.id');
 
-  return connectToDatabase()
-    .then(() => Plan.findById(identifier))
-    .then(doc => callback(null, response.ok(doc)))
-    .catch(err => callback(null, response.negotiate(err)));
+  try {
+    await connectToDatabase();
+    const plan = await Plan.findById(id);
+    return response.ok(plan);
+  }catch (e) {
+    return response.negotiate(e);
+  }
 };
