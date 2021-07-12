@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "serverless-mocha-plugin": "^1.11.0",
-    "serverless-offline": "^5.10.1"
+    "serverless-offline": "^7.0.0"
   },
   "scripts": {
     "test": "sls invoke test --exit",

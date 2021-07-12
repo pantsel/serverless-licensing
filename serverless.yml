@@ -23,7 +23,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs10.x
+  runtime: nodejs12.x
   apiKeys:
     - sls-licensing-${opt:stage, 'dev'}
   memorySize: 128 # Overwrite the default memory size. Default is 1024
